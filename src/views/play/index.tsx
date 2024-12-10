@@ -1,4 +1,6 @@
 
+import { Play } from "components/Play";
+import { ProtocolContextProvider } from "contexts/ProtocolContextProvider";
 import { FC } from "react";
 
 
@@ -12,7 +14,9 @@ export const PlayView: FC = ({ }) => {
         </h1>
         {/* CONTENT GOES HERE */}
         <div className="text-center">
-
+          <ProtocolContextProvider>
+            <Play></Play>
+          </ProtocolContextProvider>
         </div>
       </div>
     </div>

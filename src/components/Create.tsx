@@ -1,9 +1,9 @@
 // react / next
-import { FC, useCallback, useEffect, useState } from 'react';
+import { FC, useCallback, useEffect } from 'react';
 
 // solana
 import { useWallet, useConnection } from '@solana/wallet-adapter-react';
-import { Program, AnchorProvider, web3, BN, setProvider } from "@coral-xyz/anchor";
+import { Program, AnchorProvider, BN, setProvider } from "@coral-xyz/anchor";
 import { LAMPORTS_PER_SOL, PublicKey, Transaction } from '@solana/web3.js';
 import { getAssociatedTokenAddressSync } from "@solana/spl-token";
 
@@ -13,22 +13,17 @@ import { notify } from "../utils/notifications";
 import idl from "../assets/bull_bear_program.json";
 import { BullBearProgram } from "../assets/bull_bear_program";
 
-import { DEFAULT_ROUND_INTERVAL, DEFAULT_TOKEN_ADDRESS, priceFeedAddrSol, PROTOCOL_ADDRESS, SOL_feedId } from 'config/constants';
-import { getGamePDA, getRoundPDA } from 'utils/pdas';
+import { DEFAULT_ROUND_INTERVAL, priceFeedAddrSol, PROTOCOL_ADDRESS, SOL_feedId } from 'config/constants';
+import { getRoundPDA } from 'utils/pdas';
 import { initializeGameInstruction, initializeRoundInstruction, startRoundInstruction } from 'utils/instructions';
-import { Games } from './Games';
-import Countdown from './Countdown';
+import Link from 'next/link';
+import { getProvider, useProtocol } from 'contexts/ProtocolContextProvider';
+
 
 const idl_string = JSON.stringify(idl);;
 const idl_object = JSON.parse(idl_string);
 const tokenAddress = new PublicKey("EL9dj31wW1sws4aXTrap8ZH3gvxAyM4LHiUm2qe8GpCM");
 const protocolAddress = new PublicKey(PROTOCOL_ADDRESS);
-
-const getProvider = (userConnection, userWallet) => {
-    const provider = new AnchorProvider(userConnection, userWallet, AnchorProvider.defaultOptions());
-    setProvider(provider);
-    return provider;
-}
 
 function bnPriceToSol(bnValue: BN) {
     return (bnValue.toNumber() * 10) / (LAMPORTS_PER_SOL);
@@ -42,10 +37,39 @@ function calcBettingEndTime(startTime: BN, endTime: BN) {
     return bettingEndTime
 }
 
+function calcRoundDuration(startTime: BN, endTime: BN) {
+
+    const startDate = new Date(startTime.mul(new BN(1000)).toNumber());
+    const endDate = new Date(endTime.mul(new BN(1000)).toNumber());
+
+    // Time Difference in Milliseconds
+    const milliDiff: number = endDate.getTime()
+        - startDate.getTime();
+
+    // Total number of seconds in the difference
+    const totalSeconds = Math.floor(milliDiff / 1000);
+
+    // Total number of minutes in the difference
+    const totalMinutes = Math.floor(totalSeconds / 60);
+
+    // Total number of hours in the difference
+    const totalHours = Math.floor(totalMinutes / 60);
+
+    // Getting the number of seconds left in one minute
+    const remSeconds = totalSeconds % 60;
+
+    // Getting the number of minutes left in one hour
+    const remMinutes = totalMinutes % 60;
+
+    return `${totalHours}h : ${remMinutes}min : ${remSeconds}s`;
+}
+
+
 export const Create: FC = () => {
     const wallet = useWallet();
+
     const { connection } = useConnection();
-    const [games, setGames] = useState([]);
+    const { protocolState, updateProtocolState } = useProtocol();
 
     const initializeGame = useCallback(async () => {
 
@@ -89,7 +113,7 @@ export const Create: FC = () => {
         }
 
 
-    }, [wallet, notify, connection]);
+    }, [wallet, connection]);
 
     const startGame = useCallback(async (gamePubKey) => {
         try {
@@ -135,51 +159,17 @@ export const Create: FC = () => {
                 notify({ type: 'success', message: 'Game started!', txid: tx });
             }
 
-            getGames();
+            updateProtocolState(anchorProvider);
 
         } catch (error) {
             notify({ type: 'error', message: `Starting Game failed!`, description: error?.message });
             console.log('error', `Starting Game failed! ${error?.message}`);
         }
-    }, [wallet, notify, connection]);
-
-    const getGames = async () => {
-        console.log("Protocol PDA: ", protocolAddress.toBase58());
-        try {
-            const anchorProvider = getProvider(connection, wallet);
-            const program = new Program<BullBearProgram>(idl_object, anchorProvider);
-
-            Promise.all((await program.account.game.all()).map(async game => ({
-                ...(await program.account.game.fetch(game.publicKey)),
-                pubkey: game.publicKey,
-                address: game.publicKey.toBase58(),
-                latestRound: await (async () => {
-                    try {
-                        return {
-                            ...(await program.account.round.fetch(await getRoundPDA(
-                                program,
-                                game.publicKey,
-                                game.account.counter
-                            )))
-                        };
-                    } catch (error) {
-                        return null;
-                    }
-                })()
-            }))).then(games => {
-                setGames(games);
-
-                console.log(games);
-            });
-
-        } catch (error) {
-            console.error("Error while getting games: " + error);
-        }
-    }
+    }, [wallet, connection, updateProtocolState]);
 
     useEffect(() => {
-        getGames();
-    }, []);
+        updateProtocolState(getProvider(connection, wallet));
+    }, [connection, wallet, updateProtocolState]);
 
     return (
         <div>
@@ -201,7 +191,7 @@ export const Create: FC = () => {
                 </div>
             </div>
             <h1 className="text-center text-4xl font-bold text-transparent bg-clip-text bg-gradient-to-br from-indigo-500 to-fuchsia-500 mt-16 mb-2">
-                Games
+                Current Games
             </h1>
             <div className='flex justify-center items-center w-full p-4'>
 
@@ -213,11 +203,12 @@ export const Create: FC = () => {
                             <th className='px-4 border-b-2 border-opacity-50 pb-2 border-primary'>Game</th>
                             <th className='px-4 border-b-2 border-opacity-50 pb-2 border-primary'>Creator</th>
                             <th className='px-4 border-b-2 border-opacity-50 pb-2 border-primary'>Active Round</th>
-                            <th className='px-4 border-b-2 border-opacity-50 pb-2 border-primary'>Betting ends</th>
-                            <th className='px-4 border-b-2 border-opacity-50 pb-2 border-primary'>Round ends</th>
+                            <th className='px-4 border-b-2 border-opacity-50 pb-2 border-primary'>Round Duration</th>
+                            {/* <th className='px-4 border-b-2 border-opacity-50 pb-2 border-primary'>Round ends</th> */}
                             <th className='px-4 border-b-2 border-opacity-50 pb-2 border-primary'>Locked price</th>
                             {/* <th className='px-4 border-b-2 border-opacity-50 pb-2 border-primary'>Number of bets</th> */}
                             <th className='px-4 border-b-2 border-opacity-50 pb-2 border-primary'>Price Pool</th>
+                            <th className='px-4 border-b-2 border-opacity-50 pb-2 border-primary'>Token</th>
                             <th className='px-4 border-b-2 border-opacity-50 pb-2 border-primary'></th>
                         </tr>
 
@@ -225,8 +216,8 @@ export const Create: FC = () => {
                     </thead>
 
                     <tbody className='flex-1 font-light pt-8'>
-                        {games.map((game, idx) => (
-                            <tr className='flex flex-col flex-no border-primary border sm:h-20 wrap sm:table-row sm:bg-white/5 sm:backdrop-blur mb-8 sm:mb-0 rounded-lg sm:rounded-none' key={idx} >
+                        {protocolState.games.map((game, idx) => (
+                            <tr className='flex flex-col flex-no border-primary border sm:h-20 wrap sm:table-row sm:bg-white/10 sm:backdrop-blur mb-8 sm:mb-0 rounded-lg sm:rounded-none' key={idx} >
                                 <td className=' flex-row font-bold text-center sm:border-l-2 sm:border-primary sm:rounded-l-lg w-full sm:w-6'>
                                     <div className='flex gap-2 leading-4 m-auto sm:py-2 pt-8 pb-6 justify-center sm:w-full'>
                                         <div className='text-center w-fit sm:hidden '>GAME </div>
@@ -249,16 +240,16 @@ export const Create: FC = () => {
                                 </td>
                                 <td className='px-6 py-2  text-center '>
                                     <div className='flex gap-5  leading-4'>
-                                        <div className='sm:hidden'>Betting Ends: </div>
-                                        {game.latestRound != null && <Countdown endTime={calcBettingEndTime(game.latestRound.startTime, game.latestRound.endTime)}></Countdown>}
+                                        <div className='sm:hidden'>Round Duration: </div>
+                                        {game.latestRound != null && <div>{calcRoundDuration(game.latestRound.startTime, game.latestRound.endTime)}</div>}
                                     </div>
                                 </td>
-                                <td className='px-6 py-2  text-center '>
+                                {/* <td className='px-6 py-2  text-center '>
                                     <div className='flex gap-5  leading-4'>
                                         <div className='sm:hidden'>Round Ends: </div>
                                         {game.latestRound != null && <Countdown endTime={game.latestRound.endTime.mul(new BN(1000)).toNumber()}></Countdown>}
                                     </div>
-                                </td>
+                                </td> */}
                                 <td className='px-6 py-2  text-center '>
                                     <div className='flex gap-5  leading-4'>
                                         <div className='sm:hidden'>Locked Price: </div>
@@ -266,16 +257,18 @@ export const Create: FC = () => {
                                     </div>
                                 </td>
 
-                                {/* <td className='px-6 py-2  text-center '>
-                                    <div className='flex gap-5  leading-4'>
-                                        <div className='sm:hidden'>Number of Bets: </div>
-                                        {game.latestRound != null && <div>{game.latestRound.numBets}</div>}
-                                    </div>
-                                </td> */}
                                 <td className='px-6 py-2  text-center '>
                                     <div className='flex gap-5  leading-4'>
-                                        <div className='sm:hidden'>Locked Price: </div>
-                                        {game.latestRound != null && <div>{`${(game.latestRound.totalDown.add(game.latestRound.totalDown).toNumber() / LAMPORTS_PER_SOL).toFixed(3)} TOKEN`}</div>}
+                                        <div className='sm:hidden'>Price Pool: </div>
+                                        {game.latestRound != null && <div>{`${(game.latestRound.totalDown.add(game.latestRound.totalDown).toNumber() / LAMPORTS_PER_SOL).toFixed(3)} `}</div>}
+                                    </div>
+                                </td>
+                                <td className='px-6 py-2  text-center '>
+                                    <div className='flex gap-5  leading-4'>
+                                        <div className='sm:hidden'>Token </div>
+                                        <Link className='text-fuchsia-500 hover:text-white' target='_blank' href={`https://explorer.solana.com/address/${game.token.toBase58()}?cluster=${connection.rpcEndpoint.includes("mainnet-beta") ? "mainnet-beta" : "devnet"}`}>
+                                            <div className="w-20 overflow-hidden text-ellipsis">{game.tokenMetadata == null ? game.token.toBase58() : game.tokenMetadata.symbol}</div>
+                                        </Link>
                                     </div>
                                 </td>
 
@@ -292,7 +285,9 @@ export const Create: FC = () => {
                                                 <span className="block group-disabled:hidden" >
                                                     Start Game
                                                 </span>
-                                            </button>}
+                                            </button>
+
+                                            }
                                         </div>
 
                                     </div>

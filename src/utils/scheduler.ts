@@ -9,7 +9,7 @@ import {
 } from "@solana/web3.js";
 import { web3 } from "@coral-xyz/anchor";
 
-import idl from "../assets/prediction_game.json";
+import idl from "../assets/bull_bear_program.json";
 
 const idl_string = JSON.stringify(idl);
 const idl_object = JSON.parse(idl_string);

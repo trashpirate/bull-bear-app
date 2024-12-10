@@ -1,5 +1,6 @@
 
 import { Create } from "components/Create";
+import { ProtocolContextProvider } from "contexts/ProtocolContextProvider";
 import { FC } from "react";
 
 
@@ -13,7 +14,9 @@ export const CreateView: FC = ({ }) => {
         </h1>
         {/* CONTENT GOES HERE */}
         <div className="text-center">
-          <Create></Create>
+          <ProtocolContextProvider>
+            <Create></Create>
+          </ProtocolContextProvider>
         </div>
       </div>
     </div>

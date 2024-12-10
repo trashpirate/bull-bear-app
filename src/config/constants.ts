@@ -9,6 +9,7 @@ export const priceFeedAddrSol = new PublicKey(
 export const SOL_feedId =
   "ef0d8b6fda2ceba41da15d4095d1da392a0d2f8ed0c6c7bc0f4cfac8c280b56d";
 
+// this duration is necessary for the devnet because the price is not updated  more frequently
 export const DEFAULT_ROUND_INTERVAL = 60 * 60 * 5; // 10 minutes
 
 export const DEFAULT_TOKEN_ADDRESS =
