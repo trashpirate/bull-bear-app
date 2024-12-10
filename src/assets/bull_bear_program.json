@@ -1,0 +1,2504 @@
+{
+  "address": "FKkP7JrUxzVYgZfgvb1J86SNuFmPAEtCURD6snMtcjPu",
+  "metadata": {
+    "name": "bull_bear_program",
+    "version": "0.1.0",
+    "spec": "0.1.0",
+    "description": "Created with Anchor"
+  },
+  "instructions": [
+    {
+      "name": "claim_unclaimed_prize",
+      "discriminator": [
+        227,
+        254,
+        126,
+        255,
+        90,
+        209,
+        252,
+        96
+      ],
+      "accounts": [
+        {
+          "name": "player",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "game",
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  71,
+                  65,
+                  77,
+                  69,
+                  95,
+                  83,
+                  69,
+                  69,
+                  68
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "game.game_authority",
+                "account": "Game"
+              },
+              {
+                "kind": "account",
+                "path": "game.protocol",
+                "account": "Game"
+              },
+              {
+                "kind": "account",
+                "path": "game.token",
+                "account": "Game"
+              },
+              {
+                "kind": "account",
+                "path": "game.feed_account",
+                "account": "Game"
+              }
+            ]
+          }
+        },
+        {
+          "name": "round",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  82,
+                  79,
+                  85,
+                  78,
+                  68,
+                  95,
+                  83,
+                  69,
+                  69,
+                  68
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "game"
+              },
+              {
+                "kind": "account",
+                "path": "round.round_nr",
+                "account": "Round"
+              }
+            ]
+          }
+        },
+        {
+          "name": "bet",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  66,
+                  69,
+                  84,
+                  95,
+                  83,
+                  69,
+                  69,
+                  68
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "player"
+              },
+              {
+                "kind": "account",
+                "path": "round"
+              }
+            ]
+          }
+        },
+        {
+          "name": "mint"
+        },
+        {
+          "name": "vault",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "account",
+                "path": "round"
+              },
+              {
+                "kind": "const",
+                "value": [
+                  6,
+                  221,
+                  246,
+                  225,
+                  215,
+                  101,
+                  161,
+                  147,
+                  217,
+                  203,
+                  225,
+                  70,
+                  206,
+                  235,
+                  121,
+                  172,
+                  28,
+                  180,
+                  133,
+                  237,
+                  95,
+                  91,
+                  55,
+                  145,
+                  58,
+                  140,
+                  245,
+                  133,
+                  126,
+                  255,
+                  0,
+                  169
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "mint"
+              }
+            ],
+            "program": {
+              "kind": "const",
+              "value": [
+                140,
+                151,
+                37,
+                143,
+                78,
+                36,
+                137,
+                241,
+                187,
+                61,
+                16,
+                41,
+                20,
+                142,
+                13,
+                131,
+                11,
+                90,
+                19,
+                153,
+                218,
+                255,
+                16,
+                132,
+                4,
+                142,
+                123,
+                216,
+                219,
+                233,
+                248,
+                89
+              ]
+            }
+          }
+        },
+        {
+          "name": "signer_vault",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "account",
+                "path": "player"
+              },
+              {
+                "kind": "const",
+                "value": [
+                  6,
+                  221,
+                  246,
+                  225,
+                  215,
+                  101,
+                  161,
+                  147,
+                  217,
+                  203,
+                  225,
+                  70,
+                  206,
+                  235,
+                  121,
+                  172,
+                  28,
+                  180,
+                  133,
+                  237,
+                  95,
+                  91,
+                  55,
+                  145,
+                  58,
+                  140,
+                  245,
+                  133,
+                  126,
+                  255,
+                  0,
+                  169
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "mint"
+              }
+            ],
+            "program": {
+              "kind": "const",
+              "value": [
+                140,
+                151,
+                37,
+                143,
+                78,
+                36,
+                137,
+                241,
+                187,
+                61,
+                16,
+                41,
+                20,
+                142,
+                13,
+                131,
+                11,
+                90,
+                19,
+                153,
+                218,
+                255,
+                16,
+                132,
+                4,
+                142,
+                123,
+                216,
+                219,
+                233,
+                248,
+                89
+              ]
+            }
+          }
+        },
+        {
+          "name": "token_program",
+          "address": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"
+        },
+        {
+          "name": "associated_token_program",
+          "address": "ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL"
+        },
+        {
+          "name": "system_program",
+          "address": "11111111111111111111111111111111"
+        }
+      ],
+      "args": []
+    },
+    {
+      "name": "close_betting_phase",
+      "discriminator": [
+        124,
+        223,
+        169,
+        85,
+        53,
+        11,
+        101,
+        227
+      ],
+      "accounts": [
+        {
+          "name": "game_authority",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "game",
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  71,
+                  65,
+                  77,
+                  69,
+                  95,
+                  83,
+                  69,
+                  69,
+                  68
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "game_authority"
+              },
+              {
+                "kind": "account",
+                "path": "game.protocol",
+                "account": "Game"
+              },
+              {
+                "kind": "account",
+                "path": "game.token",
+                "account": "Game"
+              },
+              {
+                "kind": "account",
+                "path": "game.feed_account",
+                "account": "Game"
+              }
+            ]
+          }
+        },
+        {
+          "name": "round",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  82,
+                  79,
+                  85,
+                  78,
+                  68,
+                  95,
+                  83,
+                  69,
+                  69,
+                  68
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "game"
+              },
+              {
+                "kind": "account",
+                "path": "game.counter",
+                "account": "Game"
+              }
+            ]
+          }
+        },
+        {
+          "name": "system_program",
+          "address": "11111111111111111111111111111111"
+        }
+      ],
+      "args": []
+    },
+    {
+      "name": "end_current_round",
+      "discriminator": [
+        149,
+        227,
+        207,
+        128,
+        204,
+        73,
+        203,
+        77
+      ],
+      "accounts": [
+        {
+          "name": "game_authority",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "game",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  71,
+                  65,
+                  77,
+                  69,
+                  95,
+                  83,
+                  69,
+                  69,
+                  68
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "game_authority"
+              },
+              {
+                "kind": "account",
+                "path": "game.protocol",
+                "account": "Game"
+              },
+              {
+                "kind": "account",
+                "path": "game.token",
+                "account": "Game"
+              },
+              {
+                "kind": "account",
+                "path": "game.feed_account",
+                "account": "Game"
+              }
+            ]
+          }
+        },
+        {
+          "name": "round",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  82,
+                  79,
+                  85,
+                  78,
+                  68,
+                  95,
+                  83,
+                  69,
+                  69,
+                  68
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "game"
+              },
+              {
+                "kind": "account",
+                "path": "game.counter",
+                "account": "Game"
+              }
+            ]
+          }
+        },
+        {
+          "name": "mint"
+        },
+        {
+          "name": "round_vault",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "account",
+                "path": "round"
+              },
+              {
+                "kind": "const",
+                "value": [
+                  6,
+                  221,
+                  246,
+                  225,
+                  215,
+                  101,
+                  161,
+                  147,
+                  217,
+                  203,
+                  225,
+                  70,
+                  206,
+                  235,
+                  121,
+                  172,
+                  28,
+                  180,
+                  133,
+                  237,
+                  95,
+                  91,
+                  55,
+                  145,
+                  58,
+                  140,
+                  245,
+                  133,
+                  126,
+                  255,
+                  0,
+                  169
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "mint"
+              }
+            ],
+            "program": {
+              "kind": "const",
+              "value": [
+                140,
+                151,
+                37,
+                143,
+                78,
+                36,
+                137,
+                241,
+                187,
+                61,
+                16,
+                41,
+                20,
+                142,
+                13,
+                131,
+                11,
+                90,
+                19,
+                153,
+                218,
+                255,
+                16,
+                132,
+                4,
+                142,
+                123,
+                216,
+                219,
+                233,
+                248,
+                89
+              ]
+            }
+          }
+        },
+        {
+          "name": "game_vault",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "account",
+                "path": "game"
+              },
+              {
+                "kind": "const",
+                "value": [
+                  6,
+                  221,
+                  246,
+                  225,
+                  215,
+                  101,
+                  161,
+                  147,
+                  217,
+                  203,
+                  225,
+                  70,
+                  206,
+                  235,
+                  121,
+                  172,
+                  28,
+                  180,
+                  133,
+                  237,
+                  95,
+                  91,
+                  55,
+                  145,
+                  58,
+                  140,
+                  245,
+                  133,
+                  126,
+                  255,
+                  0,
+                  169
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "mint"
+              }
+            ],
+            "program": {
+              "kind": "const",
+              "value": [
+                140,
+                151,
+                37,
+                143,
+                78,
+                36,
+                137,
+                241,
+                187,
+                61,
+                16,
+                41,
+                20,
+                142,
+                13,
+                131,
+                11,
+                90,
+                19,
+                153,
+                218,
+                255,
+                16,
+                132,
+                4,
+                142,
+                123,
+                216,
+                219,
+                233,
+                248,
+                89
+              ]
+            }
+          }
+        },
+        {
+          "name": "price_update"
+        },
+        {
+          "name": "token_program",
+          "address": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"
+        },
+        {
+          "name": "associated_token_program",
+          "address": "ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL"
+        },
+        {
+          "name": "system_program",
+          "address": "11111111111111111111111111111111"
+        }
+      ],
+      "args": []
+    },
+    {
+      "name": "initialize",
+      "discriminator": [
+        175,
+        175,
+        109,
+        31,
+        13,
+        152,
+        155,
+        237
+      ],
+      "accounts": [
+        {
+          "name": "authority",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "protocol",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  80,
+                  82,
+                  79,
+                  84,
+                  79,
+                  67,
+                  79,
+                  76,
+                  95,
+                  83,
+                  69,
+                  69,
+                  68
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "authority"
+              }
+            ]
+          }
+        },
+        {
+          "name": "system_program",
+          "address": "11111111111111111111111111111111"
+        }
+      ],
+      "args": [
+        {
+          "name": "game_fee",
+          "type": "u64"
+        }
+      ]
+    },
+    {
+      "name": "initialize_new_game",
+      "discriminator": [
+        176,
+        88,
+        249,
+        22,
+        54,
+        246,
+        10,
+        109
+      ],
+      "accounts": [
+        {
+          "name": "game_authority",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "protocol",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  80,
+                  82,
+                  79,
+                  84,
+                  79,
+                  67,
+                  79,
+                  76,
+                  95,
+                  83,
+                  69,
+                  69,
+                  68
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "protocol.authority",
+                "account": "Protocol"
+              }
+            ]
+          }
+        },
+        {
+          "name": "game",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  71,
+                  65,
+                  77,
+                  69,
+                  95,
+                  83,
+                  69,
+                  69,
+                  68
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "game_authority"
+              },
+              {
+                "kind": "account",
+                "path": "protocol"
+              },
+              {
+                "kind": "account",
+                "path": "mint"
+              },
+              {
+                "kind": "arg",
+                "path": "feed_account"
+              }
+            ]
+          }
+        },
+        {
+          "name": "mint"
+        },
+        {
+          "name": "vault",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "account",
+                "path": "game"
+              },
+              {
+                "kind": "const",
+                "value": [
+                  6,
+                  221,
+                  246,
+                  225,
+                  215,
+                  101,
+                  161,
+                  147,
+                  217,
+                  203,
+                  225,
+                  70,
+                  206,
+                  235,
+                  121,
+                  172,
+                  28,
+                  180,
+                  133,
+                  237,
+                  95,
+                  91,
+                  55,
+                  145,
+                  58,
+                  140,
+                  245,
+                  133,
+                  126,
+                  255,
+                  0,
+                  169
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "mint"
+              }
+            ],
+            "program": {
+              "kind": "const",
+              "value": [
+                140,
+                151,
+                37,
+                143,
+                78,
+                36,
+                137,
+                241,
+                187,
+                61,
+                16,
+                41,
+                20,
+                142,
+                13,
+                131,
+                11,
+                90,
+                19,
+                153,
+                218,
+                255,
+                16,
+                132,
+                4,
+                142,
+                123,
+                216,
+                219,
+                233,
+                248,
+                89
+              ]
+            }
+          }
+        },
+        {
+          "name": "token_program",
+          "address": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"
+        },
+        {
+          "name": "associated_token_program",
+          "address": "ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL"
+        },
+        {
+          "name": "system_program",
+          "address": "11111111111111111111111111111111"
+        }
+      ],
+      "args": [
+        {
+          "name": "round_interval",
+          "type": "u64"
+        },
+        {
+          "name": "feed_id",
+          "type": "string"
+        },
+        {
+          "name": "feed_account",
+          "type": "pubkey"
+        }
+      ]
+    },
+    {
+      "name": "initialize_new_round",
+      "discriminator": [
+        54,
+        27,
+        157,
+        215,
+        2,
+        231,
+        235,
+        66
+      ],
+      "accounts": [
+        {
+          "name": "game_authority",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "game",
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  71,
+                  65,
+                  77,
+                  69,
+                  95,
+                  83,
+                  69,
+                  69,
+                  68
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "game_authority"
+              },
+              {
+                "kind": "account",
+                "path": "game.protocol",
+                "account": "Game"
+              },
+              {
+                "kind": "account",
+                "path": "game.token",
+                "account": "Game"
+              },
+              {
+                "kind": "account",
+                "path": "game.feed_account",
+                "account": "Game"
+              }
+            ]
+          }
+        },
+        {
+          "name": "round",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  82,
+                  79,
+                  85,
+                  78,
+                  68,
+                  95,
+                  83,
+                  69,
+                  69,
+                  68
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "game"
+              },
+              {
+                "kind": "account",
+                "path": "game.counter",
+                "account": "Game"
+              }
+            ]
+          }
+        },
+        {
+          "name": "mint"
+        },
+        {
+          "name": "vault",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "account",
+                "path": "round"
+              },
+              {
+                "kind": "const",
+                "value": [
+                  6,
+                  221,
+                  246,
+                  225,
+                  215,
+                  101,
+                  161,
+                  147,
+                  217,
+                  203,
+                  225,
+                  70,
+                  206,
+                  235,
+                  121,
+                  172,
+                  28,
+                  180,
+                  133,
+                  237,
+                  95,
+                  91,
+                  55,
+                  145,
+                  58,
+                  140,
+                  245,
+                  133,
+                  126,
+                  255,
+                  0,
+                  169
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "mint"
+              }
+            ],
+            "program": {
+              "kind": "const",
+              "value": [
+                140,
+                151,
+                37,
+                143,
+                78,
+                36,
+                137,
+                241,
+                187,
+                61,
+                16,
+                41,
+                20,
+                142,
+                13,
+                131,
+                11,
+                90,
+                19,
+                153,
+                218,
+                255,
+                16,
+                132,
+                4,
+                142,
+                123,
+                216,
+                219,
+                233,
+                248,
+                89
+              ]
+            }
+          }
+        },
+        {
+          "name": "token_program",
+          "address": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"
+        },
+        {
+          "name": "associated_token_program",
+          "address": "ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL"
+        },
+        {
+          "name": "system_program",
+          "address": "11111111111111111111111111111111"
+        }
+      ],
+      "args": []
+    },
+    {
+      "name": "place_new_bet",
+      "discriminator": [
+        53,
+        144,
+        118,
+        144,
+        235,
+        22,
+        158,
+        234
+      ],
+      "accounts": [
+        {
+          "name": "player",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "game",
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  71,
+                  65,
+                  77,
+                  69,
+                  95,
+                  83,
+                  69,
+                  69,
+                  68
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "game.game_authority",
+                "account": "Game"
+              },
+              {
+                "kind": "account",
+                "path": "game.protocol",
+                "account": "Game"
+              },
+              {
+                "kind": "account",
+                "path": "game.token",
+                "account": "Game"
+              },
+              {
+                "kind": "account",
+                "path": "game.feed_account",
+                "account": "Game"
+              }
+            ]
+          }
+        },
+        {
+          "name": "round",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  82,
+                  79,
+                  85,
+                  78,
+                  68,
+                  95,
+                  83,
+                  69,
+                  69,
+                  68
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "game"
+              },
+              {
+                "kind": "account",
+                "path": "game.counter",
+                "account": "Game"
+              }
+            ]
+          }
+        },
+        {
+          "name": "bet",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  66,
+                  69,
+                  84,
+                  95,
+                  83,
+                  69,
+                  69,
+                  68
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "player"
+              },
+              {
+                "kind": "account",
+                "path": "round"
+              }
+            ]
+          }
+        },
+        {
+          "name": "mint"
+        },
+        {
+          "name": "vault",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "account",
+                "path": "round"
+              },
+              {
+                "kind": "const",
+                "value": [
+                  6,
+                  221,
+                  246,
+                  225,
+                  215,
+                  101,
+                  161,
+                  147,
+                  217,
+                  203,
+                  225,
+                  70,
+                  206,
+                  235,
+                  121,
+                  172,
+                  28,
+                  180,
+                  133,
+                  237,
+                  95,
+                  91,
+                  55,
+                  145,
+                  58,
+                  140,
+                  245,
+                  133,
+                  126,
+                  255,
+                  0,
+                  169
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "mint"
+              }
+            ],
+            "program": {
+              "kind": "const",
+              "value": [
+                140,
+                151,
+                37,
+                143,
+                78,
+                36,
+                137,
+                241,
+                187,
+                61,
+                16,
+                41,
+                20,
+                142,
+                13,
+                131,
+                11,
+                90,
+                19,
+                153,
+                218,
+                255,
+                16,
+                132,
+                4,
+                142,
+                123,
+                216,
+                219,
+                233,
+                248,
+                89
+              ]
+            }
+          }
+        },
+        {
+          "name": "signer_vault",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "account",
+                "path": "player"
+              },
+              {
+                "kind": "const",
+                "value": [
+                  6,
+                  221,
+                  246,
+                  225,
+                  215,
+                  101,
+                  161,
+                  147,
+                  217,
+                  203,
+                  225,
+                  70,
+                  206,
+                  235,
+                  121,
+                  172,
+                  28,
+                  180,
+                  133,
+                  237,
+                  95,
+                  91,
+                  55,
+                  145,
+                  58,
+                  140,
+                  245,
+                  133,
+                  126,
+                  255,
+                  0,
+                  169
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "mint"
+              }
+            ],
+            "program": {
+              "kind": "const",
+              "value": [
+                140,
+                151,
+                37,
+                143,
+                78,
+                36,
+                137,
+                241,
+                187,
+                61,
+                16,
+                41,
+                20,
+                142,
+                13,
+                131,
+                11,
+                90,
+                19,
+                153,
+                218,
+                255,
+                16,
+                132,
+                4,
+                142,
+                123,
+                216,
+                219,
+                233,
+                248,
+                89
+              ]
+            }
+          }
+        },
+        {
+          "name": "token_program",
+          "address": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"
+        },
+        {
+          "name": "associated_token_program",
+          "address": "ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL"
+        },
+        {
+          "name": "system_program",
+          "address": "11111111111111111111111111111111"
+        }
+      ],
+      "args": [
+        {
+          "name": "prediction",
+          "type": {
+            "defined": {
+              "name": "PriceMovement"
+            }
+          }
+        },
+        {
+          "name": "amount",
+          "type": "u64"
+        }
+      ]
+    },
+    {
+      "name": "start_current_round",
+      "discriminator": [
+        13,
+        134,
+        34,
+        240,
+        78,
+        217,
+        237,
+        213
+      ],
+      "accounts": [
+        {
+          "name": "game_authority",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "game",
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  71,
+                  65,
+                  77,
+                  69,
+                  95,
+                  83,
+                  69,
+                  69,
+                  68
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "game_authority"
+              },
+              {
+                "kind": "account",
+                "path": "game.protocol",
+                "account": "Game"
+              },
+              {
+                "kind": "account",
+                "path": "game.token",
+                "account": "Game"
+              },
+              {
+                "kind": "account",
+                "path": "game.feed_account",
+                "account": "Game"
+              }
+            ]
+          }
+        },
+        {
+          "name": "round",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  82,
+                  79,
+                  85,
+                  78,
+                  68,
+                  95,
+                  83,
+                  69,
+                  69,
+                  68
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "game"
+              },
+              {
+                "kind": "account",
+                "path": "game.counter",
+                "account": "Game"
+              }
+            ]
+          }
+        },
+        {
+          "name": "price_update"
+        },
+        {
+          "name": "system_program",
+          "address": "11111111111111111111111111111111"
+        }
+      ],
+      "args": []
+    },
+    {
+      "name": "test_feed",
+      "discriminator": [
+        153,
+        164,
+        82,
+        188,
+        9,
+        129,
+        98,
+        141
+      ],
+      "accounts": [
+        {
+          "name": "game_authority",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "price_update"
+        },
+        {
+          "name": "system_program",
+          "address": "11111111111111111111111111111111"
+        }
+      ],
+      "args": [
+        {
+          "name": "feed_id",
+          "type": "string"
+        },
+        {
+          "name": "maximum_age",
+          "type": "u64"
+        }
+      ]
+    },
+    {
+      "name": "update_round_interval",
+      "discriminator": [
+        42,
+        119,
+        69,
+        132,
+        128,
+        173,
+        190,
+        250
+      ],
+      "accounts": [
+        {
+          "name": "game_authority",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "game",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  71,
+                  65,
+                  77,
+                  69,
+                  95,
+                  83,
+                  69,
+                  69,
+                  68
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "game_authority"
+              },
+              {
+                "kind": "account",
+                "path": "game.protocol",
+                "account": "Game"
+              },
+              {
+                "kind": "account",
+                "path": "game.token",
+                "account": "Game"
+              },
+              {
+                "kind": "account",
+                "path": "game.feed_account",
+                "account": "Game"
+              }
+            ]
+          }
+        },
+        {
+          "name": "system_program",
+          "address": "11111111111111111111111111111111"
+        }
+      ],
+      "args": [
+        {
+          "name": "round_interval",
+          "type": "u64"
+        }
+      ]
+    },
+    {
+      "name": "withdraw_game_funds",
+      "discriminator": [
+        83,
+        134,
+        211,
+        1,
+        52,
+        91,
+        216,
+        9
+      ],
+      "accounts": [
+        {
+          "name": "game_authority",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "game",
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  71,
+                  65,
+                  77,
+                  69,
+                  95,
+                  83,
+                  69,
+                  69,
+                  68
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "game_authority"
+              },
+              {
+                "kind": "account",
+                "path": "game.protocol",
+                "account": "Game"
+              },
+              {
+                "kind": "account",
+                "path": "game.token",
+                "account": "Game"
+              },
+              {
+                "kind": "account",
+                "path": "game.feed_account",
+                "account": "Game"
+              }
+            ]
+          }
+        },
+        {
+          "name": "mint"
+        },
+        {
+          "name": "vault",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "account",
+                "path": "game"
+              },
+              {
+                "kind": "const",
+                "value": [
+                  6,
+                  221,
+                  246,
+                  225,
+                  215,
+                  101,
+                  161,
+                  147,
+                  217,
+                  203,
+                  225,
+                  70,
+                  206,
+                  235,
+                  121,
+                  172,
+                  28,
+                  180,
+                  133,
+                  237,
+                  95,
+                  91,
+                  55,
+                  145,
+                  58,
+                  140,
+                  245,
+                  133,
+                  126,
+                  255,
+                  0,
+                  169
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "mint"
+              }
+            ],
+            "program": {
+              "kind": "const",
+              "value": [
+                140,
+                151,
+                37,
+                143,
+                78,
+                36,
+                137,
+                241,
+                187,
+                61,
+                16,
+                41,
+                20,
+                142,
+                13,
+                131,
+                11,
+                90,
+                19,
+                153,
+                218,
+                255,
+                16,
+                132,
+                4,
+                142,
+                123,
+                216,
+                219,
+                233,
+                248,
+                89
+              ]
+            }
+          }
+        },
+        {
+          "name": "signer_vault",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "account",
+                "path": "game_authority"
+              },
+              {
+                "kind": "const",
+                "value": [
+                  6,
+                  221,
+                  246,
+                  225,
+                  215,
+                  101,
+                  161,
+                  147,
+                  217,
+                  203,
+                  225,
+                  70,
+                  206,
+                  235,
+                  121,
+                  172,
+                  28,
+                  180,
+                  133,
+                  237,
+                  95,
+                  91,
+                  55,
+                  145,
+                  58,
+                  140,
+                  245,
+                  133,
+                  126,
+                  255,
+                  0,
+                  169
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "mint"
+              }
+            ],
+            "program": {
+              "kind": "const",
+              "value": [
+                140,
+                151,
+                37,
+                143,
+                78,
+                36,
+                137,
+                241,
+                187,
+                61,
+                16,
+                41,
+                20,
+                142,
+                13,
+                131,
+                11,
+                90,
+                19,
+                153,
+                218,
+                255,
+                16,
+                132,
+                4,
+                142,
+                123,
+                216,
+                219,
+                233,
+                248,
+                89
+              ]
+            }
+          }
+        },
+        {
+          "name": "token_program",
+          "address": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"
+        },
+        {
+          "name": "associated_token_program",
+          "address": "ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL"
+        },
+        {
+          "name": "system_program",
+          "address": "11111111111111111111111111111111"
+        }
+      ],
+      "args": []
+    }
+  ],
+  "accounts": [
+    {
+      "name": "Bet",
+      "discriminator": [
+        147,
+        23,
+        35,
+        59,
+        15,
+        75,
+        155,
+        32
+      ]
+    },
+    {
+      "name": "Game",
+      "discriminator": [
+        27,
+        90,
+        166,
+        125,
+        74,
+        100,
+        121,
+        18
+      ]
+    },
+    {
+      "name": "PriceUpdateV2",
+      "discriminator": [
+        34,
+        241,
+        35,
+        99,
+        157,
+        126,
+        244,
+        205
+      ]
+    },
+    {
+      "name": "Protocol",
+      "discriminator": [
+        45,
+        39,
+        101,
+        43,
+        115,
+        72,
+        131,
+        40
+      ]
+    },
+    {
+      "name": "Round",
+      "discriminator": [
+        87,
+        127,
+        165,
+        51,
+        73,
+        78,
+        116,
+        174
+      ]
+    }
+  ],
+  "errors": [
+    {
+      "code": 6000,
+      "name": "SignerNotAuthorized",
+      "msg": "Signer is not authorized."
+    },
+    {
+      "code": 6001,
+      "name": "CurrentRoundNotEnded",
+      "msg": "Current round has not ended."
+    },
+    {
+      "code": 6002,
+      "name": "RoundNotActive",
+      "msg": "Round is not active."
+    },
+    {
+      "code": 6003,
+      "name": "BettingIsClosed",
+      "msg": "Betting is closed."
+    },
+    {
+      "code": 6004,
+      "name": "BettingPhaseNotEnded",
+      "msg": "Betting phase cannot be closed yet."
+    },
+    {
+      "code": 6005,
+      "name": "BettingNeedsToBeClosed",
+      "msg": "Betting needs to be closed."
+    },
+    {
+      "code": 6006,
+      "name": "RoundAlreadyStarted",
+      "msg": "Round already started."
+    },
+    {
+      "code": 6007,
+      "name": "NoPrizeClaimable",
+      "msg": "No prize claimable."
+    },
+    {
+      "code": 6008,
+      "name": "PrizeAlreadyClaimed",
+      "msg": "Prize already claimed."
+    },
+    {
+      "code": 6009,
+      "name": "InvalidPrediction",
+      "msg": "Invalid prediction."
+    },
+    {
+      "code": 6010,
+      "name": "MaximumBetAmountReached",
+      "msg": "Maximum bet amount reached."
+    },
+    {
+      "code": 6011,
+      "name": "NothingToWithdraw",
+      "msg": "Nothing to withdraw."
+    },
+    {
+      "code": 6012,
+      "name": "WrongTokenAddress",
+      "msg": "Wrong token address."
+    },
+    {
+      "code": 6013,
+      "name": "InvalidMintAccount",
+      "msg": "The provided mint account does not match the expected token address."
+    }
+  ],
+  "types": [
+    {
+      "name": "Bet",
+      "docs": [
+        "BETS"
+      ],
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "player",
+            "type": "pubkey"
+          },
+          {
+            "name": "round",
+            "type": "pubkey"
+          },
+          {
+            "name": "prediction",
+            "type": {
+              "defined": {
+                "name": "PriceMovement"
+              }
+            }
+          },
+          {
+            "name": "amount",
+            "type": "u64"
+          },
+          {
+            "name": "claimed",
+            "type": "bool"
+          },
+          {
+            "name": "bump",
+            "type": "u8"
+          }
+        ]
+      }
+    },
+    {
+      "name": "BettingStatus",
+      "docs": [
+        "ENUMS"
+      ],
+      "type": {
+        "kind": "enum",
+        "variants": [
+          {
+            "name": "Open"
+          },
+          {
+            "name": "Closed"
+          }
+        ]
+      }
+    },
+    {
+      "name": "Game",
+      "docs": [
+        "GAMES"
+      ],
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "protocol",
+            "type": "pubkey"
+          },
+          {
+            "name": "game_authority",
+            "type": "pubkey"
+          },
+          {
+            "name": "counter",
+            "type": "u16"
+          },
+          {
+            "name": "round_interval",
+            "type": "u64"
+          },
+          {
+            "name": "feed_id",
+            "type": {
+              "array": [
+                "u8",
+                32
+              ]
+            }
+          },
+          {
+            "name": "feed_account",
+            "type": "pubkey"
+          },
+          {
+            "name": "vault",
+            "type": "pubkey"
+          },
+          {
+            "name": "token",
+            "type": "pubkey"
+          },
+          {
+            "name": "bump",
+            "type": "u8"
+          }
+        ]
+      }
+    },
+    {
+      "name": "PriceFeedMessage",
+      "repr": {
+        "kind": "c"
+      },
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "feed_id",
+            "docs": [
+              "`FeedId` but avoid the type alias because of compatibility issues with Anchor's `idl-build` feature."
+            ],
+            "type": {
+              "array": [
+                "u8",
+                32
+              ]
+            }
+          },
+          {
+            "name": "price",
+            "type": "i64"
+          },
+          {
+            "name": "conf",
+            "type": "u64"
+          },
+          {
+            "name": "exponent",
+            "type": "i32"
+          },
+          {
+            "name": "publish_time",
+            "docs": [
+              "The timestamp of this price update in seconds"
+            ],
+            "type": "i64"
+          },
+          {
+            "name": "prev_publish_time",
+            "docs": [
+              "The timestamp of the previous price update. This field is intended to allow users to",
+              "identify the single unique price update for any moment in time:",
+              "for any time t, the unique update is the one such that prev_publish_time < t <= publish_time.",
+              "",
+              "Note that there may not be such an update while we are migrating to the new message-sending logic,",
+              "as some price updates on pythnet may not be sent to other chains (because the message-sending",
+              "logic may not have triggered). We can solve this problem by making the message-sending mandatory",
+              "(which we can do once publishers have migrated over).",
+              "",
+              "Additionally, this field may be equal to publish_time if the message is sent on a slot where",
+              "where the aggregation was unsuccesful. This problem will go away once all publishers have",
+              "migrated over to a recent version of pyth-agent."
+            ],
+            "type": "i64"
+          },
+          {
+            "name": "ema_price",
+            "type": "i64"
+          },
+          {
+            "name": "ema_conf",
+            "type": "u64"
+          }
+        ]
+      }
+    },
+    {
+      "name": "PriceMovement",
+      "type": {
+        "kind": "enum",
+        "variants": [
+          {
+            "name": "None"
+          },
+          {
+            "name": "Bull"
+          },
+          {
+            "name": "Bear"
+          },
+          {
+            "name": "NoChange"
+          }
+        ]
+      }
+    },
+    {
+      "name": "PriceUpdateV2",
+      "docs": [
+        "A price update account. This account is used by the Pyth Receiver program to store a verified price update from a Pyth price feed.",
+        "It contains:",
+        "- `write_authority`: The write authority for this account. This authority can close this account to reclaim rent or update the account to contain a different price update.",
+        "- `verification_level`: The [`VerificationLevel`] of this price update. This represents how many Wormhole guardian signatures have been verified for this price update.",
+        "- `price_message`: The actual price update.",
+        "- `posted_slot`: The slot at which this price update was posted."
+      ],
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "write_authority",
+            "type": "pubkey"
+          },
+          {
+            "name": "verification_level",
+            "type": {
+              "defined": {
+                "name": "VerificationLevel"
+              }
+            }
+          },
+          {
+            "name": "price_message",
+            "type": {
+              "defined": {
+                "name": "PriceFeedMessage"
+              }
+            }
+          },
+          {
+            "name": "posted_slot",
+            "type": "u64"
+          }
+        ]
+      }
+    },
+    {
+      "name": "Protocol",
+      "docs": [
+        "PROTOCOL"
+      ],
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "authority",
+            "type": "pubkey"
+          },
+          {
+            "name": "game_fee",
+            "type": "u64"
+          },
+          {
+            "name": "bump",
+            "type": "u8"
+          }
+        ]
+      }
+    },
+    {
+      "name": "Round",
+      "docs": [
+        "ROUNDS"
+      ],
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "game",
+            "type": "pubkey"
+          },
+          {
+            "name": "round_nr",
+            "type": "u16"
+          },
+          {
+            "name": "start_time",
+            "type": "i64"
+          },
+          {
+            "name": "end_time",
+            "type": "i64"
+          },
+          {
+            "name": "start_price",
+            "type": "i64"
+          },
+          {
+            "name": "end_price",
+            "type": "i64"
+          },
+          {
+            "name": "total_up",
+            "type": "u64"
+          },
+          {
+            "name": "total_down",
+            "type": "u64"
+          },
+          {
+            "name": "betting",
+            "type": {
+              "defined": {
+                "name": "BettingStatus"
+              }
+            }
+          },
+          {
+            "name": "result",
+            "type": {
+              "defined": {
+                "name": "PriceMovement"
+              }
+            }
+          },
+          {
+            "name": "status",
+            "type": {
+              "defined": {
+                "name": "RoundStatus"
+              }
+            }
+          },
+          {
+            "name": "num_bets",
+            "type": "u16"
+          },
+          {
+            "name": "bump",
+            "type": "u8"
+          }
+        ]
+      }
+    },
+    {
+      "name": "RoundStatus",
+      "type": {
+        "kind": "enum",
+        "variants": [
+          {
+            "name": "Active"
+          },
+          {
+            "name": "Inactive"
+          },
+          {
+            "name": "Ended"
+          }
+        ]
+      }
+    },
+    {
+      "name": "VerificationLevel",
+      "docs": [
+        "Pyth price updates are bridged to all blockchains via Wormhole.",
+        "Using the price updates on another chain requires verifying the signatures of the Wormhole guardians.",
+        "The usual process is to check the signatures for two thirds of the total number of guardians, but this can be cumbersome on Solana because of the transaction size limits,",
+        "so we also allow for partial verification.",
+        "",
+        "This enum represents how much a price update has been verified:",
+        "- If `Full`, we have verified the signatures for two thirds of the current guardians.",
+        "- If `Partial`, only `num_signatures` guardian signatures have been checked.",
+        "",
+        "# Warning",
+        "Using partially verified price updates is dangerous, as it lowers the threshold of guardians that need to collude to produce a malicious price update."
+      ],
+      "type": {
+        "kind": "enum",
+        "variants": [
+          {
+            "name": "Partial",
+            "fields": [
+              {
+                "name": "num_signatures",
+                "type": "u8"
+              }
+            ]
+          },
+          {
+            "name": "Full"
+          }
+        ]
+      }
+    }
+  ]
+}

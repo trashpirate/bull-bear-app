@@ -1,6 +1,8 @@
-import { WalletAdapterNetwork, WalletError } from '@solana/wallet-adapter-base';
+import { BaseWalletAdapter, WalletAdapterNetwork, WalletError } from '@solana/wallet-adapter-base';
 import { ConnectionProvider, WalletProvider } from '@solana/wallet-adapter-react';
 import {
+    PhantomWalletAdapter,
+    SolflareWalletAdapter,
     UnsafeBurnerWalletAdapter
 } from '@solana/wallet-adapter-wallets';
 import { Cluster, clusterApiUrl } from '@solana/web3.js';
@@ -11,9 +13,9 @@ import { NetworkConfigurationProvider, useNetworkConfiguration } from './Network
 import dynamic from "next/dynamic";
 
 const ReactUIWalletModalProviderDynamic = dynamic(
-  async () =>
-    (await import("@solana/wallet-adapter-react-ui")).WalletModalProvider,
-  { ssr: false }
+    async () =>
+        (await import("@solana/wallet-adapter-react-ui")).WalletModalProvider,
+    { ssr: false }
 );
 
 const WalletContextProvider: FC<{ children: ReactNode }> = ({ children }) => {
@@ -26,7 +28,8 @@ const WalletContextProvider: FC<{ children: ReactNode }> = ({ children }) => {
 
     const wallets = useMemo(
         () => [
-            new UnsafeBurnerWalletAdapter(),
+            new PhantomWalletAdapter(),
+            new SolflareWalletAdapter(),
         ],
         [network]
     );
@@ -46,7 +49,7 @@ const WalletContextProvider: FC<{ children: ReactNode }> = ({ children }) => {
                 <ReactUIWalletModalProviderDynamic>
                     {children}
                 </ReactUIWalletModalProviderDynamic>
-			</WalletProvider>
+            </WalletProvider>
         </ConnectionProvider>
     );
 };
