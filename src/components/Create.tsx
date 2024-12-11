@@ -17,7 +17,7 @@ import { DEFAULT_ROUND_INTERVAL, priceFeedAddrSol, PROTOCOL_ADDRESS, SOL_feedId 
 import { getRoundPDA } from 'utils/pdas';
 import { initializeGameInstruction, initializeRoundInstruction, startRoundInstruction } from 'utils/instructions';
 import Link from 'next/link';
-import { getProvider, useProtocol } from 'contexts/ProtocolContextProvider';
+import { Game, getProvider, useProtocol } from 'contexts/ProtocolContextProvider';
 
 
 const idl_string = JSON.stringify(idl);;
@@ -128,15 +128,11 @@ export const Create: FC = () => {
                 0
             )
 
-            const vault = getAssociatedTokenAddressSync(tokenAddress, round, true);
-
-
             const instruction1 = initializeRoundInstruction(
                 wallet.publicKey,
                 program,
                 gamePubKey,
                 round,
-                vault,
                 tokenAddress
             )
 
@@ -167,9 +163,106 @@ export const Create: FC = () => {
         }
     }, [wallet, connection, updateProtocolState]);
 
+
+
+    const closeBetting = useCallback(async (gamePubKey: PublicKey) => {
+        try {
+            const response = await fetch('/api/close-betting', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ gameAddress: gamePubKey.toBase58() }),
+            });
+            const { data, error } = await response.json();
+            const tx = data;
+
+            if (tx !== undefined && tx.length > 0) {
+                notify({ type: 'success', message: 'Betting Closed!', txid: tx });
+            }
+        } catch (error) {
+            notify({ type: 'error', message: `Close Betting failed!`, description: error?.message });
+            console.log('error', `Close Betting failed! ${error?.message}`);
+        }
+    }, [updateProtocolState]);
+
+    const endRound = useCallback(async (gamePubKey: PublicKey) => {
+        try {
+            const response = await fetch('/api/end-round', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ gameAddress: gamePubKey.toBase58() }),
+            });
+            const { data, error } = await response.json();
+            const tx = data;
+
+            if (tx !== undefined && tx.length > 0) {
+                notify({ type: 'success', message: 'Round Ended!', txid: tx });
+            }
+
+
+        } catch (error) {
+            notify({ type: 'error', message: `Ending Round failed!`, description: error?.message });
+            console.log('error', `Ending Round failed! ${error?.message}`);
+        }
+    }, [updateProtocolState]);
+
     useEffect(() => {
         updateProtocolState(getProvider(connection, wallet));
     }, [connection, wallet, updateProtocolState]);
+
+
+    const getGameButton = (game: Game) => {
+
+        if (game.latestRound == null) {
+            return (
+                <button
+                    className="group w-32 m-2 btn animate-pulse bg-gradient-to-br from-indigo-500 to-fuchsia-500 hover:from-white hover:to-purple-300 text-black"
+                    onClick={() => startGame(game.pubkey)} disabled={!wallet.publicKey}
+                >
+                    <div className="hidden group-disabled:block">
+                        Wallet not connected
+                    </div>
+                    <span className="block group-disabled:hidden" >
+                        Start Game
+                    </span>
+                </button>
+            )
+        }
+        else if (Object.keys(game.latestRound.betting).toString() == "open") {
+            return (
+                <button
+                    className="group w-32 m-2 btn animate-pulse bg-gradient-to-br from-indigo-500 to-fuchsia-500 hover:from-white hover:to-purple-300 text-black"
+                    onClick={() => closeBetting(game.pubkey)} disabled={!wallet.publicKey}
+                >
+                    <div className="hidden group-disabled:block">
+                        Wallet not connected
+                    </div>
+                    <span className="block group-disabled:hidden" >
+                        Close Betting
+                    </span>
+                </button>
+            )
+        }
+        else if (Object.keys(game.latestRound.betting).toString() == "closed" && Object.keys(game.latestRound.status)[0].toString() !== "ended") {
+            return (
+                <button
+                    className="group w-32 m-2 btn animate-pulse bg-gradient-to-br from-indigo-500 to-fuchsia-500 hover:from-white hover:to-purple-300 text-black"
+                    onClick={() => endRound(game.pubkey)} disabled={!wallet.publicKey}
+                >
+                    <div className="hidden group-disabled:block">
+                        Wallet not connected
+                    </div>
+                    <span className="block group-disabled:hidden" >
+                        End Round
+                    </span>
+                </button>
+            )
+        }
+        else {
+            <div>Something went wrong</div>
+        }
+    };
+
+
 
     return (
         <div>
@@ -275,21 +368,8 @@ export const Create: FC = () => {
                                 <td className='px-6  py-8 sm:py-2 text-center flex-col justify-center align-middle sm:rounded-r-lg'>
                                     <div className='flex flex-row gap-4 my-auto'>
                                         <div className='mx-auto w-fit h-fit my-auto'>
-                                            {game.latestRound == null && <button
-                                                className="group w-32 m-2 btn animate-pulse bg-gradient-to-br from-indigo-500 to-fuchsia-500 hover:from-white hover:to-purple-300 text-black"
-                                                onClick={() => startGame(game.pubkey)} disabled={!wallet.publicKey}
-                                            >
-                                                <div className="hidden group-disabled:block">
-                                                    Wallet not connected
-                                                </div>
-                                                <span className="block group-disabled:hidden" >
-                                                    Start Game
-                                                </span>
-                                            </button>
-
-                                            }
+                                            {getGameButton(game)}
                                         </div>
-
                                     </div>
                                 </td>
                             </tr>

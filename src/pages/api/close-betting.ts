@@ -1,0 +1,74 @@
+// Next.js API route support: https://nextjs.org/docs/api-routes/introduction
+import {
+  AnchorProvider,
+  Program,
+  setProvider,
+  Wallet,
+} from "@coral-xyz/anchor";
+import { Connection, Keypair, PublicKey, Transaction } from "@solana/web3.js";
+import { BullBearProgram } from "assets/bull_bear_program";
+import type { NextApiRequest, NextApiResponse } from "next";
+
+import idl from "../../assets/bull_bear_program.json";
+import { getRoundPDA } from "utils/pdas";
+import { closeBettingInstruction } from "utils/instructions";
+
+const idl_string = JSON.stringify(idl);
+const idl_object = JSON.parse(idl_string);
+const connection = new Connection("https://api.devnet.solana.com");
+const secretKey = process.env.PRIVATE_KEY
+  ? JSON.parse(process.env.PRIVATE_KEY)
+  : null;
+
+if (!secretKey) {
+  throw new Error("No secret key found.");
+}
+
+const payer = Keypair.fromSecretKey(Uint8Array.from(secretKey));
+const wallet = new Wallet(payer);
+const provider = new AnchorProvider(
+  connection,
+  wallet,
+  AnchorProvider.defaultOptions()
+);
+setProvider(provider);
+const program = new Program<BullBearProgram>(idl_object, provider);
+
+type Data = {
+  data: string;
+  error: string;
+};
+
+export default async function handler(
+  req: NextApiRequest,
+  res: NextApiResponse<Data>
+) {
+  try {
+    if (req.method !== "POST") {
+      return res.status(405).json({ data: null, error: "Method not allowed" });
+    }
+
+    const { gameAddress } = req.body;
+    console.log("Game PDA: ", gameAddress);
+    const gamePubKey = new PublicKey(gameAddress);
+
+    const game = await program.account.game.fetch(gamePubKey);
+    const roundPubKey = await getRoundPDA(program, gamePubKey, game.counter);
+    const instruction = await closeBettingInstruction(
+      wallet.publicKey,
+      program,
+      gamePubKey,
+      roundPubKey
+    );
+
+    const transaction = new Transaction();
+    transaction.add(await instruction);
+
+    const response = await provider.sendAndConfirm(transaction);
+
+    res.status(200).json({ data: response, error: undefined });
+  } catch (error) {
+    console.error("Error signing transaction:", error);
+    res.status(500).json({ data: null, error: "Internal Server Error" });
+  }
+}

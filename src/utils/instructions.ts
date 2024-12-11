@@ -18,13 +18,69 @@ import {
 } from "@solana/spl-token";
 import { BullBearProgram } from "assets/bull_bear_program";
 
+export async function endRoundInstruction(
+  signer: PublicKey,
+  program: Program<BullBearProgram>,
+  gamePDA: PublicKey,
+  roundPDA: PublicKey,
+  tokenAddress: PublicKey,
+  priceFeedAddr: PublicKey
+) {
+  const gameVaultPDA = getAssociatedTokenAddressSync(
+    tokenAddress,
+    gamePDA,
+    true
+  );
+
+  const roundVaultPDA = getAssociatedTokenAddressSync(
+    tokenAddress,
+    roundPDA,
+    true
+  );
+
+  const instruction = await program.methods
+    .endCurrentRound()
+    .accountsStrict({
+      gameAuthority: signer,
+      game: gamePDA,
+      round: roundPDA,
+      mint: tokenAddress,
+      roundVault: roundVaultPDA,
+      gameVault: gameVaultPDA,
+      priceUpdate: priceFeedAddr,
+      tokenProgram: TOKEN_PROGRAM_ID,
+      associatedTokenProgram: ASSOCIATED_TOKEN_PROGRAM_ID,
+      systemProgram: web3.SystemProgram.programId,
+    })
+    .instruction();
+  return instruction;
+}
+
+export async function closeBettingInstruction(
+  signer: PublicKey,
+  program: Program<BullBearProgram>,
+  gamePDA: PublicKey,
+  roundPDA: PublicKey
+) {
+  const instruction = await program.methods
+    .closeBettingPhase()
+    .accountsStrict({
+      gameAuthority: signer,
+      game: gamePDA,
+      round: roundPDA,
+      systemProgram: web3.SystemProgram.programId,
+    })
+    .instruction();
+  return instruction;
+}
+
 export async function placeBetInstruction(
   signer: PublicKey,
   program: Program<BullBearProgram>,
   gamePDA: PublicKey,
-  roundPDA: any,
-  roundVaultPDA: any,
-  tokenAddress: any,
+  roundPDA: PublicKey,
+  roundVaultPDA: PublicKey,
+  tokenAddress: PublicKey,
   signerTokenAccount: any,
   prediction: any,
   amount: number
@@ -55,9 +111,9 @@ export async function initializeRoundInstruction(
   program: any,
   gamePDA: any,
   roundPDA: any,
-  vault: any,
   tokenAddress: any
 ) {
+  const vault = getAssociatedTokenAddressSync(tokenAddress, roundPDA, true);
   const instruction = await program.methods
     .initializeNewRound()
     .accounts({
