@@ -106,7 +106,7 @@ export const Play: FC = () => {
             {
                 protocolState.games.map((game, idx) => {
                     return (
-                        game.latestRound != null && <PredictionCard id={idx} game={game}></PredictionCard>
+                        game.latestRound != null && <PredictionCard key={idx} id={idx} game={game}></PredictionCard>
 
                     )
                 })

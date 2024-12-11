@@ -81,7 +81,7 @@ export async function placeBetInstruction(
   roundPDA: PublicKey,
   roundVaultPDA: PublicKey,
   tokenAddress: PublicKey,
-  signerTokenAccount: any,
+  signerTokenAccount: PublicKey,
   prediction: any,
   amount: number
 ) {
@@ -97,7 +97,7 @@ export async function placeBetInstruction(
       bet: betPDA,
       mint: tokenAddress,
       vault: roundVaultPDA,
-      signerVault: signerTokenAccount.address,
+      signerVault: signerTokenAccount,
       systemProgram: web3.SystemProgram.programId,
       tokenProgram: TOKEN_PROGRAM_ID,
       associatedTokenProgram: ASSOCIATED_TOKEN_PROGRAM_ID,
