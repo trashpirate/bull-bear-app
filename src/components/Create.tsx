@@ -182,7 +182,7 @@ export const Create: FC = () => {
             notify({ type: 'error', message: `Close Betting failed!`, description: error?.message });
             console.log('error', `Close Betting failed! ${error?.message}`);
         }
-    }, [updateProtocolState]);
+    }, []);
 
     const endRound = useCallback(async (gamePubKey: PublicKey) => {
         try {

@@ -1,11 +1,75 @@
 
-# Solana dApp Scaffold Next
+# Prediction Game - Frontend
 
-The Solana dApp Scaffold repos are meant to house good starting scaffolds for ecosystem developers to get up and running quickly with a front end client UI that integrates several common features found in dApps with some basic usage examples. Wallet Integration. State management. Components examples. Notifications. Setup recommendations.
+## Description
 
-Responsive                     |  Desktop
-:-------------------------:|:-------------------------:
-![](scaffold-mobile.png)  |  ![](scaffold-desktop.png)
+Bullish Games is a launchpad for exciting and strategic price prediction games built on the Solana blockchain. It allows players to predict the price movement of their favorite cryptocurrencies over a set period and win rewards. The game leverages the Pyth Oracle network for real-time price feeds and supports SPL tokens for betting and rewards.
+
+### How to Play the BullBear Game
+
+1. **Round Initialization:**
+   - The game creator sets up the parameters:
+     - **Cryptocurrency**: The token for price prediction (e.g., SOL).
+     - **Bet Token**: The SPL token used for placing bets and paying rewards.
+     - **Round Interval**: The duration of the round.
+   - When the round starts, the current price of the selected cryptocurrency is recorded as `start_price`, and the `start_time` is noted.
+
+2. **Betting Phase:**
+   - The betting phase is **open** at the start of the round.
+   - Players place bets predicting the price movement of the selected cryptocurrency at `end_time` (`start_time + round_interval`):
+     - **Bull**: Predicting the price will go **bull**.
+     - **Bear**: Predicting the price will go **bear**.
+   - Bets can only be placed during the first half of the interval.
+
+3. **Betting Closes:**
+   - Once half of the round interval has passed, the betting phase is **closed**. No more bets are accepted for the ongoing round.
+
+4. **Outcome Determination:**
+   - At `end_time`, the price of the cryptocurrency is observed as `end_price`.
+   - The price movement is evaluated:
+     - If `end_price` > `start_price`: **Bull**.
+     - If `end_price` < `start_price`: **Bear**.
+     - If `end_price` == `start_price`: **No change**.
+
+5. **Winners and Protocol Rules:**
+   - Players who predicted the price movement correctly are the **winners**.
+   - If there is no price change, the protocol wins, and all funds are transferred to the game vault.
+
+6. **Claiming Rewards:**
+   - After the round ends, winners can claim their rewards from the prize pool.
+   - Each winner's reward is proportional to their bet amount compared to the total bet amount on the winning side.
+
+## Features and Customization
+- **Custom Cryptocurrencies**: Choose any token with a price feed on the Pyth Oracle network.
+- **Flexible Betting Tokens**: Use any SPL token for betting and rewards.
+- **Dynamic Intervals**: Define custom time intervals for each game round.
+
+The BullBear Game combines blockchain transparency with the thrill of market prediction, creating a fair and engaging experience for all players. Predict, bet, and claim your winnings—are you ready to take on the market?
+
+### Deployment
+
+You find the deloyed app at: [https://prediction-game-theta.vercel.app/](https://prediction-game-theta.vercel.app/)
+
+## Structure
+
+ - admin view
+    - button to create a new game
+      - TODO:
+        - enter interval
+        - enter price feed
+    - button to start game (initialize and start round)
+    TODO:
+    - button to close betting
+    - button to end round
+    - button to withdraw
+    
+ - game view
+    - shows running games
+    - button for up
+    - button for down
+    TODO:
+    - button to claim reward
+   
 
 ## Getting Started
 
@@ -17,8 +81,13 @@ The responsive version for wallets and wallet adapter may not function or work a
 
 ```bash
 npm install
-# or
-yarn install
+```
+## Configuration
+
+To run the protocol you need a private key that can sign transactions from the backend. Add a `.env.local` file to the root of the project with the following variables:
+
+```bash
+PRIVATE_KEY=your_private_key
 ```
 
 ## Build and Run
@@ -27,8 +96,6 @@ Next, run the development server:
 
 ```bash
 npm run dev
-# or
-yarn dev
 ```
 
 Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
@@ -38,6 +105,13 @@ You can start editing the page by modifying `pages/index.tsx`. The page auto-upd
 [API routes](https://nextjs.org/docs/api-routes/introduction) can be accessed on [http://localhost:3000/api/hello](http://localhost:3000/api/hello). This endpoint can be edited in `pages/api/hello.ts`.
 
 The `pages/api` directory is mapped to `/api/*`. Files in this directory are treated as [API routes](https://nextjs.org/docs/api-routes/introduction) instead of React pages.
+
+To build the project for production, run:
+
+```bash
+npm run build
+```
+
 
 ## Features
 
@@ -83,45 +157,3 @@ style, package, configuration, and other project files
 
 ```
 
-## Contributing
-
-Anyone is welcome to create an issue to build, discuss or request a new feature or update to the existing code base. Please keep in mind the following when submitting an issue. We consider merging high value features that may be utilized by the majority of scaffold users. If this is not a common feature or fix, consider adding it to the component library or cookbook. Please refer to the project's architecture and style when contributing. 
-
-If submitting a feature, please reference the project structure shown above and try to follow the overall architecture and style presented in the existing scaffold.
-
-### Committing
-
-To choose a task or make your own, do the following:
-
-1. [Add an issue](https://github.com/solana-dev-adv/solana-dapp-next/issues/new) for the task and assign it to yourself or comment on the issue
-2. Make a draft PR referencing the issue.
-
-The general flow for making a contribution:
-
-1. Fork the repo on GitHub
-2. Clone the project to your own machine
-3. Commit changes to your own branch
-4. Push your work back up to your fork
-5. Submit a Pull request so that we can review your changes
-
-**NOTE**: Be sure to merge the latest from "upstream" before making a 
-pull request!
-
-You can find tasks on the [project board](https://github.com/solana-dev-adv/solana-dapp-next/projects/1) 
-or create an issue and assign it to yourself.
-
-
-## Learn More Next Js
-
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js/) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/deployment) for more details.

@@ -99,7 +99,7 @@ export const Play: FC = () => {
 
     useEffect(() => {
         updateProtocolState(getProvider(connection, wallet))
-    }, [connection, wallet]);
+    }, [connection, wallet, updateProtocolState]);
 
     return (
         <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-10" >
