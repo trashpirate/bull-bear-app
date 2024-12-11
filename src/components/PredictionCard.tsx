@@ -10,7 +10,9 @@ import { BullBearProgram } from "assets/bull_bear_program";
 import idl from "../assets/bull_bear_program.json";
 import { getBetPDA, getRoundPDA } from "utils/pdas";
 import { createApproveInstruction, getAssociatedTokenAddressSync, TOKEN_PROGRAM_ID } from "@solana/spl-token";
-import { placeBetInstruction } from "utils/instructions";
+import { claimPrizeInstruction, placeBetInstruction } from "utils/instructions";
+import ClaimPrize from "./ClaimPrize";
+import { PlayerContextProvider } from "contexts/PlayerContextProvider";
 
 
 const idl_string = JSON.stringify(idl);;
@@ -21,13 +23,9 @@ interface Props {
     game: Game;
 }
 
-
-
 const calcPrizePool = (game: Game): string => {
     const prizePool = (game.latestRound.totalUp.add(game.latestRound.totalDown).toNumber() / LAMPORTS_PER_SOL).toFixed(3);
-    console.log(prizePool);
     return prizePool;
-    // return ""
 }
 
 const calcBullX = (game: Game): string => {
@@ -36,7 +34,9 @@ const calcBullX = (game: Game): string => {
         return "1"
     }
     else {
-        return (game.latestRound.totalDown.div(game.latestRound.totalUp).toNumber() / LAMPORTS_PER_SOL).toFixed(2);
+        const total = game.latestRound.totalDown.add(game.latestRound.totalUp);
+        console.log(total)
+        return (total.div(game.latestRound.totalUp).toNumber()).toFixed(2);
     }
 
 }
@@ -46,9 +46,35 @@ const calcBearX = (game: Game): string => {
         return "1"
     }
     else {
-        return (game.latestRound.totalUp.div(game.latestRound.totalDown).toNumber() / LAMPORTS_PER_SOL).toFixed(3);
+        const total = game.latestRound.totalDown.add(game.latestRound.totalUp);
+        return (total.div(game.latestRound.totalDown).toNumber()).toFixed(3);
     }
 
+}
+
+function calcTime(duration: BN) {
+
+    const durationDate = new Date(duration.mul(new BN(1000)).toNumber());
+
+    // Time Difference in Milliseconds
+    const milliDiff: number = durationDate.getTime()
+
+    // Total number of seconds in the difference
+    const totalSeconds = Math.floor(milliDiff / 1000);
+
+    // Total number of minutes in the difference
+    const totalMinutes = Math.floor(totalSeconds / 60);
+
+    // Total number of hours in the difference
+    const totalHours = Math.floor(totalMinutes / 60);
+
+    // Getting the number of seconds left in one minute
+    const remSeconds = totalSeconds % 60;
+
+    // Getting the number of minutes left in one hour
+    const remMinutes = totalMinutes % 60;
+
+    return `${totalHours}h : ${remMinutes}min : ${remSeconds}s`;
 }
 
 export default function PredictionCard({ id, game }: Props) {
@@ -87,7 +113,7 @@ export default function PredictionCard({ id, game }: Props) {
                 true
             );
 
-            const bet = await getBetPDA(program, round, anchorProvider.publicKey);
+
             const amount = 100 * 10 ** 9;
 
 
@@ -126,6 +152,7 @@ export default function PredictionCard({ id, game }: Props) {
             console.log('error', `Placing Bet failed! ${error?.message}`);
         }
     }, [wallet, notify, connection]);
+
 
     return (
         <div key={id} className="w-full h-fit mx-auto">
@@ -187,6 +214,11 @@ export default function PredictionCard({ id, game }: Props) {
                         <div className="text-center w-full font-bold text-lg">BEARS</div>
                     </div>
 
+                </div>
+                <div className="mx-auto w-fit h-fit rounded-xl border-2 border-white/50 p-4 my-2">
+                    <PlayerContextProvider gamePubKey={game.pubkey}>
+                        <ClaimPrize game={game}></ClaimPrize>
+                    </PlayerContextProvider>
                 </div>
             </div>
 

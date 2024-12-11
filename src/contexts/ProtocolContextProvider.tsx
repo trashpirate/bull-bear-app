@@ -72,7 +72,6 @@ export function useProtocol(): ProtocolContextState {
     return useContext(ProtocolContext);
 }
 
-
 export const ProtocolContextProvider: FC<{ children: ReactNode }> = ({ children }) => {
 
     const [protocolState, setProtocolState] = useState<ProtocolState>({

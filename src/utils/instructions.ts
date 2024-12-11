@@ -74,6 +74,36 @@ export async function closeBettingInstruction(
   return instruction;
 }
 
+export async function claimPrizeInstruction(
+  signer: PublicKey,
+  program: Program<BullBearProgram>,
+  gamePDA: PublicKey,
+  roundPDA: PublicKey,
+  roundVaultPDA: PublicKey,
+  tokenAddress: PublicKey,
+  signerTokenAccount: PublicKey
+) {
+  // generate bet PDA
+  const betPDA = await getBetPDA(program, roundPDA, signer);
+
+  const instruction = await program.methods
+    .claimUnclaimedPrize()
+    .accountsStrict({
+      player: signer,
+      game: gamePDA,
+      round: roundPDA,
+      bet: betPDA,
+      mint: tokenAddress,
+      vault: roundVaultPDA,
+      signerVault: signerTokenAccount,
+      systemProgram: web3.SystemProgram.programId,
+      tokenProgram: TOKEN_PROGRAM_ID,
+      associatedTokenProgram: ASSOCIATED_TOKEN_PROGRAM_ID,
+    })
+    .instruction();
+  return instruction;
+}
+
 export async function placeBetInstruction(
   signer: PublicKey,
   program: Program<BullBearProgram>,
