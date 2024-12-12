@@ -72,9 +72,6 @@ export const Create: FC = () => {
     const anchorProvider = getProvider(connection, wallet);
 
     const { protocolState, updateProtocolState } = useProtocol();
-
-
-
     const initializeGame = useCallback(async () => {
 
         if (!wallet.publicKey) {

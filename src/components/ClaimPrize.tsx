@@ -9,9 +9,8 @@ import { Program } from '@coral-xyz/anchor'
 import { BullBearProgram } from 'assets/bull_bear_program'
 
 import idl from "../assets/bull_bear_program.json";
-import { getBetPDA, getRoundPDA } from "utils/pdas";
-import { createApproveInstruction, getAssociatedTokenAddressSync, TOKEN_PROGRAM_ID } from "@solana/spl-token";
-import { claimPrizeInstruction, placeBetInstruction } from "utils/instructions";
+import { getAssociatedTokenAddressSync } from "@solana/spl-token";
+import { claimPrizeInstruction } from "utils/instructions";
 import { Transaction } from '@solana/web3.js'
 import { usePlayer } from 'contexts/PlayerContextProvider'
 
@@ -35,7 +34,7 @@ export default function ClaimPrize({ game }: Props) {
         updatePlayerState(anchorProvider);
     }, [anchorProvider, updatePlayerState]);
 
-    console.log(playerState);
+
     const handlePrevious = useCallback(() => {
         setCurrentRound((prev) => (prev > 1 ? prev - 1 : prev))
     }, []);
@@ -119,21 +118,21 @@ export default function ClaimPrize({ game }: Props) {
                 <button
                     className="p-1 rounded-full bg-white/50 text-gray-700 hover:bg-white/25 focus:outline-none focus:ring-2 focus:ring-gray-400 disabled:opacity-50 disabled:cursor-not-allowed"
                     onClick={handleNext}
-                    disabled={currentRound === game.counter}
+                    disabled={currentRound === (game.counter)}
                     aria-label="Next round"
                 >
                     <ChevronRight className="h-4 w-4" />
                 </button>
             </div>
-            <button className="w-full bg-gray-500 hover:bg-gray-600 text-white py-2 rounded-lg transition-colors text-sm disabled:opacity-50 disabled:cursor-not-allowed"
-                onClick={() => claimPrize(game.pubkey, currentRound)} disabled={!wallet.publicKey || !playerState.bets[currentRound - 1].claimable}>
+            {playerState.bets.length > 0 && <button className="w-full bg-gray-500 hover:bg-gray-600 text-white py-2 rounded-lg transition-colors text-sm disabled:opacity-50 disabled:cursor-not-allowed"
+                onClick={() => claimPrize(game.pubkey, currentRound)} disabled={!wallet.publicKey || !playerState.bets[currentRound].claimable}>
                 <div className="hidden group-disabled:block">
                     Wallet not connected
                 </div>
                 <span className="block group-disabled:hidden" >
                     CLAIM
                 </span>
-            </button>
+            </button>}
 
         </div>
     )

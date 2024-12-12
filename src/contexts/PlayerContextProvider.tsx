@@ -90,7 +90,7 @@ export const PlayerContextProvider: FC<{ children: ReactNode; gamePubKey: Public
 
                 const bet = await getBetPDA(program, round, provider.publicKey);
                 const betInfo = await provider.connection.getAccountInfo(bet);
-                console.log("Bet info: ", betInfo);
+                // console.log("Bet info: ", betInfo);
 
                 if (betInfo != null) {
                     const betData = await program.account.bet.fetch(bet);
@@ -109,7 +109,7 @@ export const PlayerContextProvider: FC<{ children: ReactNode; gamePubKey: Public
             }
             bets.sort((a, b) => a.id - b.id);
             setPlayerState({ bets: bets, canClaim: numClaimable > 0, wallet: provider.publicKey });
-            console.log(bets);
+
         } catch (error) {
             console.error("Error while getting games: " + error);
         }

@@ -26,7 +26,7 @@ export const Play: FC = () => {
     const { protocolState, updateProtocolState } = useProtocol();
 
     useEffect(() => {
-        updateProtocolState(getProvider(connection, wallet))
+        updateProtocolState(getProvider(connection, wallet));
     }, [connection, wallet, updateProtocolState]);
 
     return (

@@ -3,7 +3,7 @@ import { LAMPORTS_PER_SOL, Transaction } from "@solana/web3.js";
 import { Game, getProvider } from "contexts/ProtocolContextProvider"
 import Countdown from "./Countdown";
 import { useConnection, useWallet } from "@solana/wallet-adapter-react";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useState } from "react";
 import { notify } from "utils/notifications";
 import { BullBearProgram } from "assets/bull_bear_program";
 
@@ -153,8 +153,6 @@ export default function PredictionCard({ id, game }: Props) {
             console.log('error', `Placing Bet failed! ${error?.message}`);
         }
     }, [wallet, notify, connection]);
-
-
 
     return (
         <div key={id} className="w-full h-fit mx-auto">
