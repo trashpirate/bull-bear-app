@@ -18,6 +18,7 @@ import { getRoundPDA } from 'utils/pdas';
 import { initializeGameInstruction, initializeRoundInstruction, startRoundInstruction } from 'utils/instructions';
 import Link from 'next/link';
 import { Game, getProvider, useProtocol } from 'contexts/ProtocolContextProvider';
+import Countdown from './Countdown';
 
 
 const idl_string = JSON.stringify(idl);;
@@ -67,9 +68,12 @@ function calcRoundDuration(startTime: BN, endTime: BN) {
 
 export const Create: FC = () => {
     const wallet = useWallet();
-
     const { connection } = useConnection();
+    const anchorProvider = getProvider(connection, wallet);
+
     const { protocolState, updateProtocolState } = useProtocol();
+
+
 
     const initializeGame = useCallback(async () => {
 
@@ -80,7 +84,7 @@ export const Create: FC = () => {
         }
 
         try {
-            const anchorProvider = getProvider(connection, wallet);
+
             const program = new Program<BullBearProgram>(idl_object, anchorProvider);
             console.log("Protocol PDA: ", protocolAddress.toBase58());
             console.log("Game authority: ", anchorProvider.publicKey.toBase58());
@@ -101,12 +105,14 @@ export const Create: FC = () => {
             const transaction = new Transaction();
             transaction.add(await instruction);
 
-            console.log(transaction)
             const tx = await wallet.sendTransaction(transaction, connection);
 
+
             if (tx !== undefined && tx.length > 0) {
+                updateProtocolState(anchorProvider);
                 notify({ type: 'success', message: 'Initializing Game successful!', txid: tx });
             }
+
         } catch (error: any) {
             notify({ type: 'error', message: `Initializing Game failed!`, description: error?.message });
             console.log('error', `Initializing Game failed! ${error?.message}`);
@@ -117,7 +123,6 @@ export const Create: FC = () => {
 
     const startGame = useCallback(async (gamePubKey) => {
         try {
-            const anchorProvider = getProvider(connection, wallet);
             const program = new Program<BullBearProgram>(idl_object, anchorProvider);
 
             console.log("Game PDA: ", gamePubKey.toBase58())
@@ -150,12 +155,12 @@ export const Create: FC = () => {
             console.log(transaction)
             const tx = await wallet.sendTransaction(transaction, connection);
 
-
             if (tx !== undefined && tx.length > 0) {
+                updateProtocolState(anchorProvider);
                 notify({ type: 'success', message: 'Game started!', txid: tx });
             }
 
-            updateProtocolState(anchorProvider);
+
 
         } catch (error) {
             notify({ type: 'error', message: `Starting Game failed!`, description: error?.message });
@@ -172,10 +177,10 @@ export const Create: FC = () => {
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ gameAddress: gamePubKey.toBase58() }),
             });
-            const { data, error } = await response.json();
-            const tx = data;
+            const { tx, error } = await response.json();
 
             if (tx !== undefined && tx.length > 0) {
+                updateProtocolState(anchorProvider);
                 notify({ type: 'success', message: 'Betting Closed!', txid: tx });
             }
         } catch (error) {
@@ -195,6 +200,7 @@ export const Create: FC = () => {
             const tx = data;
 
             if (tx !== undefined && tx.length > 0) {
+                updateProtocolState(anchorProvider);
                 notify({ type: 'success', message: 'Round Ended!', txid: tx });
             }
 
@@ -206,8 +212,8 @@ export const Create: FC = () => {
     }, [updateProtocolState]);
 
     useEffect(() => {
-        updateProtocolState(getProvider(connection, wallet));
-    }, [connection, wallet, updateProtocolState]);
+        updateProtocolState(anchorProvider);
+    }, [anchorProvider, updateProtocolState]);
 
 
     const getGameButton = (game: Game) => {
@@ -296,7 +302,7 @@ export const Create: FC = () => {
                             <th className='px-4 border-b-2 border-opacity-50 pb-2 border-primary'>Game</th>
                             <th className='px-4 border-b-2 border-opacity-50 pb-2 border-primary'>Creator</th>
                             <th className='px-4 border-b-2 border-opacity-50 pb-2 border-primary'>Active Round</th>
-                            <th className='px-4 border-b-2 border-opacity-50 pb-2 border-primary'>Round Duration</th>
+                            <th className='px-4 border-b-2 border-opacity-50 pb-2 border-primary'>Round Ends</th>
                             {/* <th className='px-4 border-b-2 border-opacity-50 pb-2 border-primary'>Round ends</th> */}
                             <th className='px-4 border-b-2 border-opacity-50 pb-2 border-primary'>Locked price</th>
                             {/* <th className='px-4 border-b-2 border-opacity-50 pb-2 border-primary'>Number of bets</th> */}
@@ -334,7 +340,7 @@ export const Create: FC = () => {
                                 <td className='px-6 py-2  text-center '>
                                     <div className='flex gap-5  leading-4'>
                                         <div className='sm:hidden'>Round Duration: </div>
-                                        {game.latestRound != null && <div>{calcRoundDuration(game.latestRound.startTime, game.latestRound.endTime)}</div>}
+                                        {game.latestRound != null && <Countdown endTime={game.latestRound.endTime.mul(new BN(1000)).toNumber()}></Countdown>}
                                     </div>
                                 </td>
                                 {/* <td className='px-6 py-2  text-center '>

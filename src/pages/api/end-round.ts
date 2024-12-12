@@ -19,7 +19,8 @@ import {
 
 const idl_string = JSON.stringify(idl);
 const idl_object = JSON.parse(idl_string);
-const connection = new Connection("https://api.devnet.solana.com");
+const rpcUrl = process.env.NEXT_PUBLIC_SOLANA_RPC || "http://localhost:3000";
+const connection = new Connection(rpcUrl);
 const secretKey = process.env.PRIVATE_KEY
   ? JSON.parse(process.env.PRIVATE_KEY)
   : null;

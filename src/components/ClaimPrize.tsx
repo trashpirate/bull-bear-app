@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useCallback } from 'react'
+import { useState, useCallback, useEffect } from 'react'
 import { ChevronLeft, ChevronRight } from 'lucide-react'
 import { useConnection, useWallet } from '@solana/wallet-adapter-react'
 import { notify } from 'utils/notifications'
@@ -26,11 +26,16 @@ interface Props {
 export default function ClaimPrize({ game }: Props) {
     const wallet = useWallet();
     const { connection } = useConnection();
+    const anchorProvider = getProvider(connection, wallet);
+
     const [currentRound, setCurrentRound] = useState(1);
-
     const { playerState, updatePlayerState } = usePlayer();
-    console.log(playerState)
 
+    useEffect(() => {
+        updatePlayerState(anchorProvider);
+    }, [anchorProvider, updatePlayerState]);
+
+    console.log(playerState);
     const handlePrevious = useCallback(() => {
         setCurrentRound((prev) => (prev > 1 ? prev - 1 : prev))
     }, []);
@@ -39,67 +44,55 @@ export default function ClaimPrize({ game }: Props) {
         setCurrentRound((prev) => (prev < game.counter ? prev + 1 : prev))
     }, [game.counter]);
 
-
-
-    const claimPrize = useCallback(async (gamePubKey) => {
+    const claimPrize = useCallback(async (gamePubKey, currentRound) => {
         if (!wallet.publicKey) {
             console.log('error', 'Wallet not connected!');
             notify({ type: 'error', message: 'error', description: 'Wallet not connected!' });
             return;
         }
+        const roundId = currentRound - 1;
+        const bet = playerState.bets[roundId];
+
         try {
-            if (playerState.canClaim) {
-                const anchorProvider = getProvider(connection, wallet);
+            if (playerState.bets[roundId].claimable) {
+
                 const program = new Program<BullBearProgram>(idl_object, anchorProvider);
                 const gameData = await program.account.game.fetch(gamePubKey);
 
                 const transaction = new Transaction();
-                let numInstructions = 0;
-                for (let index = 0; index <= playerState.bets.length; index++) {
-                    const round = playerState.bets[index].round;
-                    const bet = await getBetPDA(program, round, anchorProvider.publicKey);
-
-                    if (playerState.bets[index] != null) {
-                        const roundVault = getAssociatedTokenAddressSync(
-                            gameData.token,
-                            round,
-                            true
-                        );
-                        const signerVault = getAssociatedTokenAddressSync(
-                            gameData.token,
-                            anchorProvider.publicKey,
-                            true
-                        );
-
-                        const instruction = claimPrizeInstruction(
-                            anchorProvider.publicKey,
-                            program,
-                            gamePubKey,
-                            round,
-                            roundVault,
-                            gameData.token,
-                            signerVault,
-                        )
-
-                        transaction.add(await instruction);
-                        numInstructions++;
-                    }
 
 
+                const round = playerState.bets[roundId].data.round;
+
+                const roundVault = getAssociatedTokenAddressSync(
+                    gameData.token,
+                    round,
+                    true
+                );
+                const signerVault = getAssociatedTokenAddressSync(
+                    gameData.token,
+                    anchorProvider.publicKey,
+                    true
+                );
+
+                const instruction = claimPrizeInstruction(
+                    anchorProvider.publicKey,
+                    program,
+                    gamePubKey,
+                    round,
+                    roundVault,
+                    gameData.token,
+                    signerVault,
+                )
+
+                transaction.add(await instruction);
+                const tx = await wallet.sendTransaction(transaction, connection);
+
+                if (tx !== undefined && tx.length > 0) {
+                    updatePlayerState(anchorProvider);
+                    notify({ type: 'success', message: 'Claiming Prize successful!', txid: tx });
                 }
 
-                if (numInstructions > 0) {
-                    console.log(transaction)
-                    const tx = await wallet.sendTransaction(transaction, connection);
-                    updatePlayerState(gamePubKey);
-
-                    if (tx !== undefined && tx.length > 0) {
-                        notify({ type: 'success', message: 'Claiming Prize successful!', txid: tx });
-                    }
-                }
-                else {
-                    notify({ type: 'error', message: 'Nothing to claim!', description: "There are no rewards to claim." });
-                }
             } else {
                 notify({ type: 'error', message: 'Nothing to claim!', description: "There are no rewards to claim." });
             }
@@ -109,6 +102,7 @@ export default function ClaimPrize({ game }: Props) {
             console.log('error', `Claiming failed! ${error}`);
         }
     }, [wallet, notify, connection, updatePlayerState]);
+
 
     return (
         <div className="flex flex-col items-center space-y-2 w-40 mx-auto">
@@ -132,7 +126,7 @@ export default function ClaimPrize({ game }: Props) {
                 </button>
             </div>
             <button className="w-full bg-gray-500 hover:bg-gray-600 text-white py-2 rounded-lg transition-colors text-sm disabled:opacity-50 disabled:cursor-not-allowed"
-                onClick={() => claimPrize(game.pubkey)} disabled={!wallet.publicKey || !playerState.canClaim}>
+                onClick={() => claimPrize(game.pubkey, currentRound)} disabled={!wallet.publicKey || !playerState.bets[currentRound - 1].claimable}>
                 <div className="hidden group-disabled:block">
                     Wallet not connected
                 </div>

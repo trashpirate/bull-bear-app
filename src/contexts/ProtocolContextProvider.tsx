@@ -107,12 +107,13 @@ export const ProtocolContextProvider: FC<{ children: ReactNode }> = ({ children 
                         }
                     })()
                 }))).then(games => {
+
                     games.sort((a, b) => a.address.localeCompare(b.address));
                     setProtocolState({
                         games: games,
                     });
 
-                    console.log(games);
+                    // console.log(games);
                 });
 
         } catch (error) {

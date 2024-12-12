@@ -3,7 +3,7 @@ import { LAMPORTS_PER_SOL, Transaction } from "@solana/web3.js";
 import { Game, getProvider } from "contexts/ProtocolContextProvider"
 import Countdown from "./Countdown";
 import { useConnection, useWallet } from "@solana/wallet-adapter-react";
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { notify } from "utils/notifications";
 import { BullBearProgram } from "assets/bull_bear_program";
 
@@ -81,6 +81,7 @@ export default function PredictionCard({ id, game }: Props) {
 
     const wallet = useWallet();
     const { connection } = useConnection();
+    const anchorProvider = getProvider(connection, wallet);
 
     const placeBet = useCallback(async (gamePubKey, prediction) => {
         if (!wallet.publicKey) {
@@ -90,7 +91,7 @@ export default function PredictionCard({ id, game }: Props) {
         }
 
         try {
-            const anchorProvider = getProvider(connection, wallet);
+
             const program = new Program<BullBearProgram>(idl_object, anchorProvider);
 
             const gameData = await program.account.game.fetch(gamePubKey);
@@ -152,6 +153,7 @@ export default function PredictionCard({ id, game }: Props) {
             console.log('error', `Placing Bet failed! ${error?.message}`);
         }
     }, [wallet, notify, connection]);
+
 
 
     return (

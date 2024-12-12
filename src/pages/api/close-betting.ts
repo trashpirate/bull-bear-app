@@ -15,7 +15,8 @@ import { closeBettingInstruction } from "utils/instructions";
 
 const idl_string = JSON.stringify(idl);
 const idl_object = JSON.parse(idl_string);
-const connection = new Connection("https://api.devnet.solana.com");
+const rpcUrl = process.env.NEXT_PUBLIC_SOLANA_RPC;
+const connection = new Connection(rpcUrl);
 const secretKey = process.env.PRIVATE_KEY
   ? JSON.parse(process.env.PRIVATE_KEY)
   : null;
@@ -23,7 +24,6 @@ const secretKey = process.env.PRIVATE_KEY
 if (!secretKey) {
   throw new Error("No secret key found.");
 }
-
 const payer = Keypair.fromSecretKey(Uint8Array.from(secretKey));
 const wallet = new Wallet(payer);
 const provider = new AnchorProvider(
@@ -63,7 +63,6 @@ export default async function handler(
 
     const transaction = new Transaction();
     transaction.add(await instruction);
-
     const response = await provider.sendAndConfirm(transaction);
 
     res.status(200).json({ data: response, error: undefined });

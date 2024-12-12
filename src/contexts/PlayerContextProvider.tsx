@@ -20,6 +20,12 @@ const idl_object = JSON.parse(idl_string);
 const protocolAddress = new PublicKey(PROTOCOL_ADDRESS);
 
 export interface Bet {
+    id: number,
+    data: BetData,
+    claimable: boolean,
+}
+
+export interface BetData {
     player: PublicKey,
     round: PublicKey,
     prediction: any,
@@ -29,7 +35,7 @@ export interface Bet {
 }
 
 export type PlayerState = {
-    bets: Bet[] | null;
+    bets: Bet[];
     canClaim: boolean;
     wallet: PublicKey | null;
 }
@@ -54,62 +60,62 @@ export const PlayerContextProvider: FC<{ children: ReactNode; gamePubKey: Public
         wallet: null,
     });
 
-    const wallet = useWallet();
-    const { connection } = useConnection();
-
     const lastFetchTime = useRef<number>(0); // Timestamp of last fetch
     const RATE_LIMIT_MS = 5000;
 
     let numClaimable = 0;
-    const getBets = async () => {
+    const getBets = async (provider: AnchorProvider) => {
         console.log("Player PDA: ", protocolAddress.toBase58());
         try {
 
-            const anchorProvider = getProvider(connection, wallet);
-            const program = new Program<BullBearProgram>(idl_object, anchorProvider);
-
+            const program = new Program<BullBearProgram>(idl_object, provider);
             const gameData = await program.account.game.fetch(gamePubKey);
             const roundId = gameData.counter;
 
             let bets: Bet[] = [];
-            for (let index = Math.max(0, roundId - 2); index <= roundId; index++) {
+            for (let index = 0; index <= roundId; index++) {
+
                 const round = await getRoundPDA(
                     program,
                     gamePubKey,
                     index
                 )
-
-                const bet = await getBetPDA(program, round, anchorProvider.publicKey);
-                const betInfo = await connection.getAccountInfo(bet);
-
-                if (betInfo == null) {
-                    bets.push(null);
-                    continue
-                }
-
                 const roundData = await program.account.round.fetch(round);
-                const betData = await program.account.bet.fetch(bet);
 
-
-                const result = Object.keys(roundData.result).toString();
-                const prediction = Object.keys(betData.prediction).toString();
-
-                if (result == prediction && betData.claimed == false) {
-                    bets.push(betData);
-                    numClaimable++;
+                let playerBet = {
+                    id: roundData.roundNr,
+                    data: null,
+                    claimable: false
                 }
-                else {
-                    bets.push(null);
+
+                const bet = await getBetPDA(program, round, provider.publicKey);
+                const betInfo = await provider.connection.getAccountInfo(bet);
+                console.log("Bet info: ", betInfo);
+
+                if (betInfo != null) {
+                    const betData = await program.account.bet.fetch(bet);
+                    const result = Object.keys(roundData.result).toString();
+                    const prediction = Object.keys(betData.prediction).toString();
+
+                    if (result == prediction && betData.claimed == false) {
+                        playerBet.data = betData;
+                        playerBet.claimable = true;
+
+                        numClaimable++;
+                    }
                 }
+
+                bets.push(playerBet);
             }
-            setPlayerState({ bets: bets, canClaim: numClaimable > 0, wallet: wallet.publicKey });
-
+            bets.sort((a, b) => a.id - b.id);
+            setPlayerState({ bets: bets, canClaim: numClaimable > 0, wallet: provider.publicKey });
+            console.log(bets);
         } catch (error) {
             console.error("Error while getting games: " + error);
         }
     }
 
-    const updatePlayerState = () => {
+    const updatePlayerState = (provider: AnchorProvider) => {
 
         const now = Date.now();
         if (now - lastFetchTime.current < RATE_LIMIT_MS) {
@@ -117,7 +123,7 @@ export const PlayerContextProvider: FC<{ children: ReactNode; gamePubKey: Public
             return;
         }
 
-        getBets();
+        getBets(provider);
         lastFetchTime.current = now;
     };
 
