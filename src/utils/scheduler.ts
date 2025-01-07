@@ -23,12 +23,11 @@ const loadSigner = (): Keypair => {
 
 // Send Instruction
 async function sendInstruction() {
-  const connection = new Connection(
-    "https://api.devnet.solana.com",
-    "confirmed"
-  );
+  const rpcUrl = process.env.NEXT_PUBLIC_SOLANA_RPC;
+  const connection = new Connection(rpcUrl, "confirmed");
+
   const signer = loadSigner();
-  const programId = new PublicKey("YourProgramId");
+  const programId = new web3.PublicKey(idl.address);
 
   // Create instruction
   const instruction = new TransactionInstruction({

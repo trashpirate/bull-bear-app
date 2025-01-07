@@ -1,11 +1,10 @@
 // react / next
-import { FC, useCallback, useEffect } from 'react';
+import { FC, useCallback, useEffect, useState } from 'react';
 
 // solana
 import { useWallet, useConnection } from '@solana/wallet-adapter-react';
 import { Program, AnchorProvider, BN, setProvider } from "@coral-xyz/anchor";
 import { LAMPORTS_PER_SOL, PublicKey, Transaction } from '@solana/web3.js';
-import { getAssociatedTokenAddressSync } from "@solana/spl-token";
 
 // custom
 import { notify } from "../utils/notifications";
@@ -15,6 +14,7 @@ import { BullBearProgram } from "../assets/bull_bear_program";
 
 import { DEFAULT_ROUND_INTERVAL, priceFeedAddrSol, PROTOCOL_ADDRESS, SOL_feedId } from 'config/constants';
 import { getRoundPDA } from 'utils/pdas';
+import { priceFeeds } from 'config/constants';
 import { initializeGameInstruction, initializeRoundInstruction, startRoundInstruction } from 'utils/instructions';
 import Link from 'next/link';
 import { Game, getProvider, useProtocol } from 'contexts/ProtocolContextProvider';
@@ -71,12 +71,41 @@ export const Create: FC = () => {
     const { connection } = useConnection();
     const anchorProvider = getProvider(connection, wallet);
 
+    const [priceFeed, setPriceFeed] = useState<string>("None")
+    const [intervalSeconds, setIntervalSeconds] = useState<number>(DEFAULT_ROUND_INTERVAL);
+
     const { protocolState, updateProtocolState } = useProtocol();
+
+
+    useEffect(() => {
+        console.log("Selection: ", priceFeed);
+        console.log("Price Feed: ", priceFeeds[priceFeed].address);
+        console.log("Price Feed ID: ", priceFeeds[priceFeed].feedId);
+    }, [priceFeed]);
+
+
+    // Function to handle dropdown selection
+    const handleDropdownChange = (event) => {
+        console.log("Selection: ", event.target.value);
+        setPriceFeed(event.target.value);
+    };
+
     const initializeGame = useCallback(async () => {
 
         if (!wallet.publicKey) {
             console.log('error', 'Wallet not connected!');
             notify({ type: 'error', message: 'error', description: 'Wallet not connected!' });
+            return;
+        }
+
+        console.log("Selection: ", priceFeed);
+        console.log("Price Feed: ", priceFeeds[priceFeed].address);
+        console.log("Price Feed ID: ", priceFeeds[priceFeed].feedId);
+
+        if (priceFeed == "None") {
+
+            console.log('error', 'Select a valid price feed!');
+            notify({ type: 'error', message: 'error', description: 'Select a valid price feed!' });
             return;
         }
 
@@ -86,17 +115,17 @@ export const Create: FC = () => {
             console.log("Protocol PDA: ", protocolAddress.toBase58());
             console.log("Game authority: ", anchorProvider.publicKey.toBase58());
 
-            const interval = DEFAULT_ROUND_INTERVAL + Math.floor(Math.random() * 100);
-            console.log("Game interval: ", DEFAULT_ROUND_INTERVAL);
+            // const interval = DEFAULT_ROUND_INTERVAL + Math.floor(Math.random() * 100);
+            console.log("Game interval: ", intervalSeconds);
 
             const instruction = initializeGameInstruction(
                 program,
                 anchorProvider.publicKey,
                 protocolAddress,
                 tokenAddress,
-                SOL_feedId,
-                priceFeedAddrSol,
-                interval,
+                priceFeeds[priceFeed].feedId,
+                new PublicKey(priceFeeds[priceFeed].address),
+                intervalSeconds,
             )
 
             const transaction = new Transaction();
@@ -116,11 +145,12 @@ export const Create: FC = () => {
         }
 
 
-    }, [wallet, connection]);
+    }, [wallet, connection, priceFeed, intervalSeconds]);
 
     const startGame = useCallback(async (gamePubKey) => {
         try {
             const program = new Program<BullBearProgram>(idl_object, anchorProvider);
+            const game = await program.account.game.fetch(gamePubKey);
 
             console.log("Game PDA: ", gamePubKey.toBase58())
 
@@ -143,7 +173,7 @@ export const Create: FC = () => {
                 program,
                 gamePubKey,
                 round,
-                priceFeedAddrSol
+                game.feedAccount
             )
 
             const transaction = new Transaction();
@@ -269,21 +299,53 @@ export const Create: FC = () => {
 
     return (
         <div>
+
             <div className="flex flex-row justify-center">
-                <div className="relative group items-center">
-                    <div className="m-1 absolute -inset-0.5 bg-gradient-to-r from-indigo-500 to-fuchsia-500 
+                <div className="flex flex-col items-center justify-center space-y-4 p-4">
+                    <div className="w-full max-w-md space-y-2">
+                        <label htmlFor="price-feed" className="block text-sm font-medium text-gray-300">
+                            Price Feed
+                        </label>
+                        <select
+                            id="price-feed"
+                            className="mt-1 block w-full px-3 py-2 bg-white text-gray-700 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+                            value={priceFeed}
+                            onChange={handleDropdownChange}
+                        >
+                            <option value="None">Select a price feed</option>
+                            <option value="SOL">SOL/USD</option>
+                            <option value="BTC">BTC/USD</option>
+                            <option value="ETH">ETH/USD</option>
+                        </select>
+                    </div>
+                    <div className="w-full max-w-md space-y-2">
+                        <label htmlFor="interval-seconds" className="block text-sm font-medium text-gray-300">
+                            Interval Seconds
+                        </label>
+                        <input
+                            id="interval-seconds"
+                            type="number"
+                            className="mt-1 block w-full px-3 py-2 bg-white text-gray-300 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+                            placeholder="Enter interval in seconds"
+                            value={intervalSeconds}
+                            onChange={(e) => setIntervalSeconds(Number(e.target.value))}
+                        />
+                    </div>
+                    <div className="relative group items-center">
+                        <div className="m-1 absolute -inset-0.5 bg-gradient-to-r from-indigo-500 to-fuchsia-500 
                 rounded-lg blur opacity-20 group-hover:opacity-100 transition duration-1000 group-hover:duration-200 animate-tilt"></div>
-                    <button
-                        className="group w-60 m-2 btn animate-pulse bg-gradient-to-br from-indigo-500 to-fuchsia-500 hover:from-white hover:to-purple-300 text-black"
-                        onClick={initializeGame} disabled={!wallet.publicKey}
-                    >
-                        <div className="hidden group-disabled:block">
-                            Wallet not connected
-                        </div>
-                        <span className="block group-disabled:hidden" >
-                            Create New Game
-                        </span>
-                    </button>
+                        <button
+                            className="group w-60 m-2 btn animate-pulse bg-gradient-to-br from-indigo-500 to-fuchsia-500 hover:from-white hover:to-purple-300 text-black"
+                            onClick={initializeGame} disabled={!wallet.publicKey}
+                        >
+                            <div className="hidden group-disabled:block">
+                                Wallet not connected
+                            </div>
+                            <span className="block group-disabled:hidden" >
+                                Create New Game
+                            </span>
+                        </button>
+                    </div>
                 </div>
             </div>
             <h1 className="text-center text-4xl font-bold text-transparent bg-clip-text bg-gradient-to-br from-indigo-500 to-fuchsia-500 mt-16 mb-2">
@@ -349,7 +411,10 @@ export const Create: FC = () => {
                                 <td className='px-6 py-2  text-center '>
                                     <div className='flex gap-5  leading-4'>
                                         <div className='sm:hidden'>Locked Price: </div>
-                                        {game.latestRound != null && <div>{`${bnPriceToSol(game.latestRound.startPrice).toFixed(3)} USD/SOL`}</div>}
+                                        {game.latestRound != null && (() => {
+                                            const feed = priceFeeds[Object.keys(priceFeeds).find((key) => priceFeeds[key].address === game.feedAccount.toBase58())];
+                                            return feed ? <div>{`${bnPriceToSol(game.latestRound.startPrice).toFixed(3)} ${feed.label}`}</div> : <div>Unknown Feed</div>;
+                                        })()}
                                     </div>
                                 </td>
 

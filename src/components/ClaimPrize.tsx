@@ -124,15 +124,15 @@ export default function ClaimPrize({ game }: Props) {
                     <ChevronRight className="h-4 w-4" />
                 </button>
             </div>
-            {playerState.bets.length > 0 && <button className="w-full bg-gray-500 hover:bg-gray-600 text-white py-2 rounded-lg transition-colors text-sm disabled:opacity-50 disabled:cursor-not-allowed"
-                onClick={() => claimPrize(game.pubkey, currentRound)} disabled={!wallet.publicKey || !playerState.bets[currentRound].claimable}>
+            <button className="w-full bg-gray-500 hover:bg-gray-600 text-white py-2 rounded-lg transition-colors text-sm disabled:opacity-50 disabled:cursor-not-allowed"
+                onClick={() => claimPrize(game.pubkey, currentRound)} disabled={!wallet.publicKey || playerState.bets[currentRound] == undefined || !playerState.bets[currentRound].claimable}>
                 <div className="hidden group-disabled:block">
                     Wallet not connected
                 </div>
                 <span className="block group-disabled:hidden" >
                     CLAIM
                 </span>
-            </button>}
+            </button>
 
         </div>
     )

@@ -1,12 +1,5 @@
 import { Connection, PublicKey } from "@solana/web3.js";
-import {
-  Program,
-  AnchorProvider,
-  web3,
-  utils,
-  BN,
-  setProvider,
-} from "@coral-xyz/anchor";
+import { utils } from "@coral-xyz/anchor";
 
 export async function fetchPdaDataRaw(connection: Connection, pda: PublicKey) {
   const accountInfo = await connection.getAccountInfo(pda);

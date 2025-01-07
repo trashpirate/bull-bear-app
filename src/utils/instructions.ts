@@ -1,18 +1,8 @@
 import { getBetPDA, getGamePDA } from "./pdas";
+import { Program, web3, BN } from "@coral-xyz/anchor";
+import { PublicKey } from "@solana/web3.js";
 import {
-  Program,
-  AnchorProvider,
-  web3,
-  utils,
-  BN,
-  setProvider,
-  Wallet,
-} from "@coral-xyz/anchor";
-import { PublicKey, Transaction } from "@solana/web3.js";
-import {
-  approve,
   ASSOCIATED_TOKEN_PROGRAM_ID,
-  createApproveInstruction,
   getAssociatedTokenAddressSync,
   TOKEN_PROGRAM_ID,
 } from "@solana/spl-token";
