@@ -93,8 +93,8 @@ export default async function handler(
 
     const transaction = new Transaction();
     transaction.add(await instruction1, await instruction2, await instruction3);
-
     const response = await provider.sendAndConfirm(transaction);
+    console.log("Transaction confirmed", response);
 
     res.status(200).json({ data: response, error: undefined });
   } catch (error) {

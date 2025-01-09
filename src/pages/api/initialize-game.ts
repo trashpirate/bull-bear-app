@@ -11,7 +11,13 @@ import type { NextApiRequest, NextApiResponse } from "next";
 
 import idl from "../../assets/bull_bear_program.json";
 import { getRoundPDA } from "utils/pdas";
-import { closeBettingInstruction } from "utils/instructions";
+import {
+  closeBettingInstruction,
+  initializeGameInstruction,
+} from "utils/instructions";
+import { priceFeeds, PROTOCOL_ADDRESS } from "config/constants";
+
+const protocolAddress = new PublicKey(PROTOCOL_ADDRESS);
 
 const idl_string = JSON.stringify(idl);
 const idl_object = JSON.parse(idl_string);
@@ -48,17 +54,23 @@ export default async function handler(
       return res.status(405).json({ data: null, error: "Method not allowed" });
     }
 
-    const { gameAddress } = req.body;
-    console.log("Game PDA: ", gameAddress);
-    const gamePubKey = new PublicKey(gameAddress);
+    const { tokenAddress, priceFeed, intervalSeconds } = req.body;
+    const token = new PublicKey(tokenAddress);
+    const feedId = priceFeeds[priceFeed].feedId;
+    const feedPubkey = new PublicKey(priceFeeds[priceFeed].address);
 
-    const game = await program.account.game.fetch(gamePubKey);
-    const roundPubKey = await getRoundPDA(program, gamePubKey, game.counter);
-    const instruction = await closeBettingInstruction(
-      wallet.publicKey,
+    console.log("Protocol PDA: ", protocolAddress.toBase58());
+    console.log("Game interval: ", intervalSeconds);
+    console.log("Price Feed: ", priceFeed);
+
+    const instruction = initializeGameInstruction(
       program,
-      gamePubKey,
-      roundPubKey
+      wallet.publicKey,
+      protocolAddress,
+      token,
+      feedId,
+      feedPubkey,
+      intervalSeconds
     );
 
     const transaction = new Transaction();

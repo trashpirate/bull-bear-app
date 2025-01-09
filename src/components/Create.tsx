@@ -110,29 +110,15 @@ export const Create: FC = () => {
         }
 
         try {
+            const tokenBase58 = "EL9dj31wW1sws4aXTrap8ZH3gvxAyM4LHiUm2qe8GpCM";
+            const response = await fetch('/api/initialize-game', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ tokenAddress: tokenBase58, priceFeed: priceFeed, intervalSeconds: intervalSeconds }),
+            });
+            const { tx, error } = await response.json();
 
-            const program = new Program<BullBearProgram>(idl_object, anchorProvider);
-            console.log("Protocol PDA: ", protocolAddress.toBase58());
-            console.log("Game authority: ", anchorProvider.publicKey.toBase58());
-
-            // const interval = DEFAULT_ROUND_INTERVAL + Math.floor(Math.random() * 100);
-            console.log("Game interval: ", intervalSeconds);
-
-            const instruction = initializeGameInstruction(
-                program,
-                anchorProvider.publicKey,
-                protocolAddress,
-                tokenAddress,
-                priceFeeds[priceFeed].feedId,
-                new PublicKey(priceFeeds[priceFeed].address),
-                intervalSeconds,
-            )
-
-            const transaction = new Transaction();
-            transaction.add(await instruction);
-
-            const tx = await wallet.sendTransaction(transaction, connection);
-
+            console.log("Transaction confirmed", response);
 
             if (tx !== undefined && tx.length > 0) {
                 updateProtocolState(anchorProvider);
@@ -149,45 +135,20 @@ export const Create: FC = () => {
 
     const startGame = useCallback(async (gamePubKey) => {
         try {
-            const program = new Program<BullBearProgram>(idl_object, anchorProvider);
-            const game = await program.account.game.fetch(gamePubKey);
+            const response = await fetch('/api/start-game', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ gameAddress: gamePubKey.toBase58() }),
+            });
+            const { data, error } = await response.json();
+            const tx = data;
 
-            console.log("Game PDA: ", gamePubKey.toBase58())
-
-            const round = await getRoundPDA(
-                program,
-                gamePubKey,
-                0
-            )
-
-            const instruction1 = initializeRoundInstruction(
-                wallet.publicKey,
-                program,
-                gamePubKey,
-                round,
-                tokenAddress
-            )
-
-            const instruction2 = startRoundInstruction(
-                wallet.publicKey,
-                program,
-                gamePubKey,
-                round,
-                game.feedAccount
-            )
-
-            const transaction = new Transaction();
-            transaction.add(await instruction1, await instruction2);
-
-            console.log(transaction)
-            const tx = await wallet.sendTransaction(transaction, connection);
+            console.log("Transaction confirmed", response);
 
             if (tx !== undefined && tx.length > 0) {
                 updateProtocolState(anchorProvider);
                 notify({ type: 'success', message: 'Game started!', txid: tx });
             }
-
-
 
         } catch (error) {
             notify({ type: 'error', message: `Starting Game failed!`, description: error?.message });

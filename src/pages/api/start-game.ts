@@ -11,11 +11,14 @@ import type { NextApiRequest, NextApiResponse } from "next";
 
 import idl from "../../assets/bull_bear_program.json";
 import { getRoundPDA } from "utils/pdas";
-import { closeBettingInstruction } from "utils/instructions";
+import {
+  initializeRoundInstruction,
+  startRoundInstruction,
+} from "utils/instructions";
 
 const idl_string = JSON.stringify(idl);
 const idl_object = JSON.parse(idl_string);
-const rpcUrl = process.env.NEXT_PUBLIC_SOLANA_RPC;
+const rpcUrl = process.env.NEXT_PUBLIC_SOLANA_RPC || "http://localhost:3000";
 const connection = new Connection(rpcUrl);
 const secretKey = process.env.PRIVATE_KEY
   ? JSON.parse(process.env.PRIVATE_KEY)
@@ -24,6 +27,7 @@ const secretKey = process.env.PRIVATE_KEY
 if (!secretKey) {
   throw new Error("No secret key found.");
 }
+
 const payer = Keypair.fromSecretKey(Uint8Array.from(secretKey));
 const wallet = new Wallet(payer);
 const provider = new AnchorProvider(
@@ -49,21 +53,33 @@ export default async function handler(
     }
 
     const { gameAddress } = req.body;
-    console.log("Game PDA: ", gameAddress);
     const gamePubKey = new PublicKey(gameAddress);
-
     const game = await program.account.game.fetch(gamePubKey);
-    const roundPubKey = await getRoundPDA(program, gamePubKey, game.counter);
-    const instruction = await closeBettingInstruction(
+
+    console.log("Game PDA: ", gamePubKey.toBase58());
+
+    const round = await getRoundPDA(program, gamePubKey, 0);
+
+    const instruction1 = initializeRoundInstruction(
       wallet.publicKey,
       program,
       gamePubKey,
-      roundPubKey
+      round,
+      game.token
+    );
+
+    const instruction2 = startRoundInstruction(
+      wallet.publicKey,
+      program,
+      gamePubKey,
+      round,
+      game.feedAccount
     );
 
     const transaction = new Transaction();
-    transaction.add(await instruction);
+    transaction.add(await instruction1, await instruction2);
     const response = await provider.sendAndConfirm(transaction);
+
     console.log("Transaction confirmed", response);
 
     res.status(200).json({ data: response, error: undefined });
