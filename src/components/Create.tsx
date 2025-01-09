@@ -3,74 +3,28 @@ import { FC, useCallback, useEffect, useState } from 'react';
 
 // solana
 import { useWallet, useConnection } from '@solana/wallet-adapter-react';
-import { Program, AnchorProvider, BN, setProvider } from "@coral-xyz/anchor";
-import { LAMPORTS_PER_SOL, PublicKey, Transaction } from '@solana/web3.js';
+import { BN } from "@coral-xyz/anchor";
+import { LAMPORTS_PER_SOL, PublicKey } from '@solana/web3.js';
 
 // custom
 import { notify } from "../utils/notifications";
-
-import idl from "../assets/bull_bear_program.json";
-import { BullBearProgram } from "../assets/bull_bear_program";
-
-import { DEFAULT_ROUND_INTERVAL, priceFeedAddrSol, PROTOCOL_ADDRESS, SOL_feedId } from 'config/constants';
-import { getRoundPDA } from 'utils/pdas';
+import { DEFAULT_ROUND_INTERVAL, DEFAULT_TOKEN_ADDRESS } from 'config/constants';
 import { priceFeeds } from 'config/constants';
-import { initializeGameInstruction, initializeRoundInstruction, startRoundInstruction } from 'utils/instructions';
-import Link from 'next/link';
 import { Game, getProvider, useProtocol } from 'contexts/ProtocolContextProvider';
 import Countdown from './Countdown';
-
-
-const idl_string = JSON.stringify(idl);;
-const idl_object = JSON.parse(idl_string);
-const tokenAddress = new PublicKey("EL9dj31wW1sws4aXTrap8ZH3gvxAyM4LHiUm2qe8GpCM");
-const protocolAddress = new PublicKey(PROTOCOL_ADDRESS);
+import { set } from 'date-fns';
+import Link from 'next/link';
 
 function bnPriceToSol(bnValue: BN) {
     return (bnValue.toNumber() * 10) / (LAMPORTS_PER_SOL);
 }
-
-function calcBettingEndTime(startTime: BN, endTime: BN) {
-    const durationBN = endTime.sub(startTime);
-    const bettingEndBN = startTime.add(durationBN.div(new BN(2)));
-
-    const bettingEndTime = bettingEndBN.mul(new BN(1000)).toNumber();
-    return bettingEndTime
-}
-
-function calcRoundDuration(startTime: BN, endTime: BN) {
-
-    const startDate = new Date(startTime.mul(new BN(1000)).toNumber());
-    const endDate = new Date(endTime.mul(new BN(1000)).toNumber());
-
-    // Time Difference in Milliseconds
-    const milliDiff: number = endDate.getTime()
-        - startDate.getTime();
-
-    // Total number of seconds in the difference
-    const totalSeconds = Math.floor(milliDiff / 1000);
-
-    // Total number of minutes in the difference
-    const totalMinutes = Math.floor(totalSeconds / 60);
-
-    // Total number of hours in the difference
-    const totalHours = Math.floor(totalMinutes / 60);
-
-    // Getting the number of seconds left in one minute
-    const remSeconds = totalSeconds % 60;
-
-    // Getting the number of minutes left in one hour
-    const remMinutes = totalMinutes % 60;
-
-    return `${totalHours}h : ${remMinutes}min : ${remSeconds}s`;
-}
-
 
 export const Create: FC = () => {
     const wallet = useWallet();
     const { connection } = useConnection();
     const anchorProvider = getProvider(connection, wallet);
 
+    const [bettingToken, setBettingToken] = useState<string>("")
     const [priceFeed, setPriceFeed] = useState<string>("None")
     const [intervalSeconds, setIntervalSeconds] = useState<number>(DEFAULT_ROUND_INTERVAL);
 
@@ -103,18 +57,22 @@ export const Create: FC = () => {
         console.log("Price Feed ID: ", priceFeeds[priceFeed].feedId);
 
         if (priceFeed == "None") {
-
             console.log('error', 'Select a valid price feed!');
             notify({ type: 'error', message: 'error', description: 'Select a valid price feed!' });
             return;
         }
 
+        if (bettingToken == "") {
+            console.log('error', 'Enter a valid token address!');
+            notify({ type: 'error', message: 'error', description: 'Enter a valid token address!' });
+            return;
+        }
+
         try {
-            const tokenBase58 = "EL9dj31wW1sws4aXTrap8ZH3gvxAyM4LHiUm2qe8GpCM";
             const response = await fetch('/api/initialize-game', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ tokenAddress: tokenBase58, priceFeed: priceFeed, intervalSeconds: intervalSeconds }),
+                body: JSON.stringify({ tokenAddress: bettingToken, priceFeed: priceFeed, intervalSeconds: intervalSeconds }),
             });
             const { tx, error } = await response.json();
 
@@ -130,7 +88,6 @@ export const Create: FC = () => {
             console.log('error', `Initializing Game failed! ${error?.message}`);
         }
 
-
     }, [wallet, connection, priceFeed, intervalSeconds]);
 
     const startGame = useCallback(async (gamePubKey) => {
@@ -143,9 +100,8 @@ export const Create: FC = () => {
             const { data, error } = await response.json();
             const tx = data;
 
-            console.log("Transaction confirmed", response);
-
             if (tx !== undefined && tx.length > 0) {
+                console.log("Transaction confirmed", response);
                 updateProtocolState(anchorProvider);
                 notify({ type: 'success', message: 'Game started!', txid: tx });
             }
@@ -168,6 +124,7 @@ export const Create: FC = () => {
             const { tx, error } = await response.json();
 
             if (tx !== undefined && tx.length > 0) {
+                console.log("Transaction confirmed", response);
                 updateProtocolState(anchorProvider);
                 notify({ type: 'success', message: 'Betting Closed!', txid: tx });
             }
@@ -175,6 +132,7 @@ export const Create: FC = () => {
             notify({ type: 'error', message: `Close Betting failed!`, description: error?.message });
             console.log('error', `Close Betting failed! ${error?.message}`);
         }
+
     }, []);
 
     const endRound = useCallback(async (gamePubKey: PublicKey) => {
@@ -188,6 +146,7 @@ export const Create: FC = () => {
             const tx = data;
 
             if (tx !== undefined && tx.length > 0) {
+                console.log("Transaction confirmed", response);
                 updateProtocolState(anchorProvider);
                 notify({ type: 'success', message: 'Round Ended!', txid: tx });
             }
@@ -202,7 +161,6 @@ export const Create: FC = () => {
     useEffect(() => {
         updateProtocolState(anchorProvider);
     }, [anchorProvider, updateProtocolState]);
-
 
     const getGameButton = (game: Game) => {
 
@@ -279,17 +237,30 @@ export const Create: FC = () => {
                             <option value="ETH">ETH/USD</option>
                         </select>
                     </div>
+
                     <div className="w-full max-w-md space-y-2">
                         <label htmlFor="interval-seconds" className="block text-sm font-medium text-gray-300">
-                            Interval Seconds
+                            Interval in Seconds
                         </label>
                         <input
                             id="interval-seconds"
                             type="number"
-                            className="mt-1 block w-full px-3 py-2 bg-white text-gray-300 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+                            className="mt-1 block w-full px-3 py-2 bg-white text-gray-700 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 placeholder-gray-300"
                             placeholder="Enter interval in seconds"
                             value={intervalSeconds}
                             onChange={(e) => setIntervalSeconds(Number(e.target.value))}
+                        />
+                    </div>
+                    <div className="w-full max-w-md space-y-2">
+                        <label htmlFor="price-feed" className="block text-sm font-medium text-gray-300">
+                            Betting Token
+                        </label>
+                        <input
+                            id="betting-token"
+                            className="mt-1 block w-full px-3 py-2 bg-white border text-gray-700 border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+                            placeholder="Enter token address"
+                            value={bettingToken}
+                            onChange={(e) => setBettingToken(e.target.value)}
                         />
                     </div>
                     <div className="relative group items-center">
@@ -410,3 +381,39 @@ export const Create: FC = () => {
         </div>
     );
 };
+
+
+// function calcBettingEndTime(startTime: BN, endTime: BN) {
+//     const durationBN = endTime.sub(startTime);
+//     const bettingEndBN = startTime.add(durationBN.div(new BN(2)));
+
+//     const bettingEndTime = bettingEndBN.mul(new BN(1000)).toNumber();
+//     return bettingEndTime
+// }
+
+// function calcRoundDuration(startTime: BN, endTime: BN) {
+
+//     const startDate = new Date(startTime.mul(new BN(1000)).toNumber());
+//     const endDate = new Date(endTime.mul(new BN(1000)).toNumber());
+
+//     // Time Difference in Milliseconds
+//     const milliDiff: number = endDate.getTime()
+//         - startDate.getTime();
+
+//     // Total number of seconds in the difference
+//     const totalSeconds = Math.floor(milliDiff / 1000);
+
+//     // Total number of minutes in the difference
+//     const totalMinutes = Math.floor(totalSeconds / 60);
+
+//     // Total number of hours in the difference
+//     const totalHours = Math.floor(totalMinutes / 60);
+
+//     // Getting the number of seconds left in one minute
+//     const remSeconds = totalSeconds % 60;
+
+//     // Getting the number of minutes left in one hour
+//     const remMinutes = totalMinutes % 60;
+
+//     return `${totalHours}h : ${remMinutes}min : ${remSeconds}s`;
+// }
